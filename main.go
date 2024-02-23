@@ -8,6 +8,7 @@ import (
 	"github.com/w1png/go-htmx-ecommerce-template/config"
 	"github.com/w1png/go-htmx-ecommerce-template/file_storage"
 	"github.com/w1png/go-htmx-ecommerce-template/models"
+	"github.com/w1png/go-htmx-ecommerce-template/settings"
 	"github.com/w1png/go-htmx-ecommerce-template/storage"
 )
 
@@ -36,6 +37,10 @@ func main() {
 	}
 
 	if err := file_storage.InitFileStorage(); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := settings.InitSettings(); err != nil {
 		log.Fatal(err)
 	}
 

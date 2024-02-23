@@ -7,10 +7,11 @@ templ Navbar() {
   <div class="container mx-auto h-full flex items-center justify-center gap-6 z-20 px-4" hx-target="body"
     hx-swap="outerhtml transition:true" hx-boost="true">
     @components.NavbarButton("Админ панель", "/admin", "/admin")
-    @components.NavbarButton("Товары", "/admin/products", "/admin/products")
-    @components.NavbarButton("Категории", "/admin/categories", "/admin/categories")
-    @components.NavbarButton("Примеры работ", "/admin/examples", "/admin/examples")
-    @components.NavbarButton("Администраторы", "/admin/users", "/admin/users")
+    @components.NavbarButton("Товары", "/admin/products", "/admin/api/products")
+    @components.NavbarButton("Категории", "/admin/categories", "/admin/api/categories")
+    @components.NavbarButton("Примеры работ", "/admin/examples", "/admin/api/examples")
+    @components.NavbarButton("Администраторы", "/admin/users", "/admin/api/users")
+    @components.NavbarButton("Настройки", "/admin/settings", "/admin/api/settings")
   </div>
 </div>
 }
