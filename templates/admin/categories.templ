@@ -52,7 +52,7 @@ templ AddCategoryModal(categories []*models.Category) {
       </select>
     </label>
     @components.Checkbox("Отображается", "add-is_enabled", "is_enabled", "true", true)
-    <p id="error" class="add-error"></p>
+    <p id="adderror" class="error"></p>
     <button class="submit" x-on:htmx:after-swap.window="add_category_modal_open = false">Добавить</button>
   </form>
 </span>

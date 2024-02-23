@@ -13,24 +13,27 @@ type Example struct {
 	UUID uuid.UUID `gorm:"unique;type:uuid;default:gen_random_uuid()"`
 
 	Title string
-	Tags  pq.StringArray
+	Tags  pq.StringArray `gorm:"type:text[]"`
 
-	Images     pq.StringArray
-	Thumbnails pq.StringArray
+	CustomChipBaseID uint
+	CustomChipBase   CustomChipBase `gorm:"foreignKey:CustomChipBaseID"`
+
+	Images     pq.StringArray `gorm:"type:text[]"`
+	Thumbnails pq.StringArray `gorm:"type:text[]"`
 }
 
 func NewExample(
-	uuid uuid.UUID,
 	title string,
 	tags pq.StringArray,
 	images pq.StringArray,
 	thumbnails pq.StringArray,
+	custom_chip_base_id uint,
 ) *Example {
 	return &Example{
-		UUID:       uuid,
-		Title:      title,
-		Tags:       tags,
-		Images:     images,
-		Thumbnails: thumbnails,
+		Title:            title,
+		Tags:             tags,
+		Images:           images,
+		Thumbnails:       thumbnails,
+		CustomChipBaseID: custom_chip_base_id,
 	}
 }
