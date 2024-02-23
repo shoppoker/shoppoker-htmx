@@ -1,0 +1,221 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+@apply transition-all ease-in-out duration-300;
+}
+
+body {
+font-family: "Unbounded", sans-serif;
+font-optical-sizing: auto;
+font-weight: 400;
+font-style: normal;
+
+@apply scroll-smooth text-text;
+}
+
+strong {
+font-family: "Unbounded", sans-serif;
+font-optical-sizing: auto;
+font-weight: 700;
+font-style: normal;
+}
+
+button,
+input {
+@apply select-none;
+}
+
+@layer base {
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+-webkit-appearance: none;
+margin: 0;
+}
+
+input[type="file"] {
+@apply hidden;
+}
+}
+
+.labeled-input-parent {
+@apply flex flex-col gap-1;
+}
+
+.labeled-input-parent label {
+@apply text-nowrap select-none;
+}
+
+.labeled-input-parent input,
+.labeled-input-parent textarea {
+@apply input resize-none;
+}
+
+.readonly-labeled-input-parent {
+@apply flex flex-col gap-1;
+}
+
+.readonly-labeled-input-parent label {
+@apply text-nowrap select-none;
+}
+
+.readonly-labeled-input-parent input,
+.readonly-labeled-input-parent textarea {
+@apply input bg-border/30 backdrop-blur-md cursor-not-allowed text-hover select-none;
+}
+
+@layer components {
+.input {
+@apply rounded-2xl border-2 border-border py-4 px-6 w-full;
+}
+
+.select {
+@apply rounded-2xl border-2 border-border py-4 px-6 w-full;
+}
+}
+
+.error {
+@apply text-red-500 text-sm;
+}
+
+.url {
+@apply underline text-nowrap hover:text-hover transition-all ease-in-out duration-300;
+}
+
+.submit {
+@apply py-4 px-6 border-2 border-accent bg-accent text-white rounded-xl hover:bg-white hover:text-accent
+cursor-pointer flex items-center justify-center;
+}
+
+.delete {
+@apply py-4 px-6 border-2 border-delete bg-delete text-white rounded-xl hover:bg-white hover:text-delete
+cursor-pointer flex items-center justify-center;
+}
+
+.submit-disabled {
+@apply py-2 px-6 border-2 border-submit-disabled bg-submit-disabled text-white text-2xl rounded-2xl animate-pulse
+cursor-not-allowed;
+}
+
+.delete-disabled {
+@apply py-2 px-6 border-2 border-delete-disabled bg-delete-disabled text-white text-2xl rounded-2xl animate-pulse
+cursor-not-allowed;
+}
+
+.htmx-indicator {
+display: none;
+opacity: 0;
+transition: opacity 500ms ease-in;
+}
+.htmx-request .htmx-indicator {
+display: block;
+opacity: 1;
+}
+.htmx-request.htmx-indicator {
+display: block;
+opacity: 1;
+}
+
+@keyframes fade-in {
+from {
+opacity: 0;
+}
+}
+
+@keyframes fade-out {
+to {
+opacity: 0;
+}
+}
+
+@keyframes scale-in {
+from {
+transform: scale(0.8);
+}
+}
+
+@keyframes scale-out {
+to {
+transform: scale(0.8);
+}
+}
+
+@media (prefers-reduced-motion) {
+page-transition-animation {
+animation: none;
+}
+}
+
+::view-transition-old(page-transition-animation) {
+animation:
+180ms cubic-bezier(0.4, 0, 1, 1) both fade-out,
+600ms cubic-bezier(0.4, 0, 0.2, 1) both scale-out;
+}
+::view-transition-new(page-transition-animation) {
+animation:
+420ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in,
+600ms cubic-bezier(0.4, 0, 0.2, 1) both scale-in;
+}
+
+.page-transition {
+view-transition-name: page-transition-animation;
+}
+
+.admin-object-card-parent {
+@apply h-16 py-2 px-4 w-full flex flex-row items-center gap-4 rounded-2xl border-2 border-accent bg-white
+hover:scale-105;
+}
+
+.checkbox:before {
+content: "";
+@apply bg-white border border-border block w-4 h-4 rounded-full;
+}
+
+.checkbox {
+@apply flex flex-row gap-2 items-center cursor-pointer select-none;
+}
+
+input[type="checkbox"]:checked + .checkbox:before {
+@apply bg-accent border-accent;
+}
+
+[data-tooltip] {
+@apply relative cursor-pointer;
+}
+
+[data-tooltip]:after {
+@apply absolute left-1/2 -translate-x-1/2 opacity-0 scale-50 transition-all ease-in-out duration-300 invisible;
+}
+
+[data-tooltip]:after {
+content: attr(data-tooltip);
+@apply bg-black/50 whitespace-nowrap px-2 py-1 text-white text-sm bottom-[calc(100%+0.5rem)] rounded-full;
+}
+
+[data-tooltip]:hover:after {
+@apply scale-100 opacity-100 transition-all ease-in-out duration-300 visible;
+}
+
+.slider {
+@apply h-1 w-full;
+}
+
+.slider::-webkit-slider-thumb {
+@apply appearance-none bottom-1 h-[1px] aspect-square relative bg-red-400;
+box-shadow: -100vw 0 0 0.25rem rgb(117 84 255);
+}
+
+.slider::-webkit-slider-runnable-track {
+@apply bg-accent/50 w-full h-1;
+}
+
+@media not ((hover: hover) and (pointer: fine)) {
+.mobile-hidden {
+@apply hidden;
+}
+}
+
+.opacity-intersection {
+@apply opacity-0;
+}

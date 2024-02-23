@@ -1,0 +1,7 @@
+data.db
+tmp/
+static/output.css
+static/images/
+*_templ.go
+**/.DS_Store
+.env

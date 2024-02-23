@@ -1,0 +1,39 @@
+package user_templates
+
+import "github.com/w1png/go-htmx-ecommerce-template/models"
+import "github.com/w1png/go-htmx-ecommerce-template/templates/scripts"
+
+script intersectionObserver() {
+var observer = new IntersectionObserver(function (entries) {
+entries.forEach(function (entry) {
+if (entry.isIntersecting) {
+setTimeout(function () {
+entry.target.dataset.intersectionObserver.split(" ").forEach(function (className) {
+entry.target.classList.remove(className);
+})
+}, entry.target.dataset.intersectionObserverDelay || 300);
+}
+});
+});
+
+var targets = document.querySelectorAll("[data-intersection-observer]");
+targets.forEach(function (target) {
+observer.observe(target);
+});
+}
+
+templ Index(featured_products []*models.Product) {
+@Base("Главная") {
+@indexPage(featured_products)
+}
+}
+
+templ IndexApi(featured_products []*models.Product) {
+@scripts.SetTitle("Главная")
+@Navbar()
+@indexPage(featured_products)
+}
+
+templ indexPage(featured_products []*models.Product) {
+<div class="container mx-auto px-4 flex flex-col gap-24 py-6"></div>
+}

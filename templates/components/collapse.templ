@@ -1,0 +1,15 @@
+package components
+
+templ Collapse(btn templ.Component) {
+	<div class="flex flex-col">
+		// select nearest button
+		<button
+			onclick="this.parentNode.querySelector('.max-h-0').classList.toggle('max-h-screen')"
+		>
+			@btn
+		</button>
+		<div class="flex flex-col max-h-0 overflow-y-hidden transition-all duration-300 ease-in-out">
+			{ children... }
+		</div>
+	</div>
+}

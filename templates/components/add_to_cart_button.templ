@@ -1,0 +1,15 @@
+package components
+
+import "fmt"
+
+templ AddToCartButton(product_id uint, quantity int) {
+	<div class="flex flex-row p-2 h-16 bg-gray-400 rounded-xl" hx-target="this" hx-swap="outerHTML">
+		if quantity != 0 {
+			<button class="h-full aspect-square" hx-put={ fmt.Sprintf("/api/cart/change_quantity/%d?decrease=true", product_id) }>{ "-" }</button>
+		} else {
+			<button class="h-full text-gray-400 aspect-square">{ "-" }</button>
+		}
+		<p class="grow">{ fmt.Sprintf("%d", quantity) }</p>
+		<button class="h-full aspect-square" hx-put={ fmt.Sprintf("/api/cart/change_quantity/%d", product_id) }>{ "+" }</button>
+	</div>
+}

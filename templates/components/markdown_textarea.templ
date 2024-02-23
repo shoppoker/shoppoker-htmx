@@ -1,0 +1,19 @@
+package components
+
+import "github.com/w1png/go-htmx-ecommerce-template/templates/components/icons"
+
+templ MarkdownTextArea(id, name, value, placeholder string) {
+	<div class="relative">
+		<textarea
+			class="admin-input min-h-40 w-full"
+			id={ id }
+			name={ name }
+			placeholder={ placeholder }
+		>{ value }</textarea>
+		<div class="absolute right-2 top-2 overflow-visible">
+			<div data-tooltip="Markdown">
+				@icons.Info("text-gray-400 w-4 h-4 hover:scale-110 transition-transform duratoin-300 ease-in-out")
+			</div>
+		</div>
+	</div>
+}

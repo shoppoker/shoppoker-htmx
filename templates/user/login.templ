@@ -1,0 +1,36 @@
+package user_templates
+
+import "github.com/w1png/go-htmx-ecommerce-template/templates/scripts"
+import "github.com/w1png/go-htmx-ecommerce-template/templates/components"
+
+templ Login() {
+	@Base("Вход в админ панель") {
+		@loginPage()
+	}
+}
+
+templ LoginApi() {
+	@scripts.SetTitle("Вход в админ панель")
+	@Navbar()
+	@loginPage()
+}
+
+templ loginPage() {
+	<div class="container mx-auto h-screen flex justify-center items-center" hx-ext="response-targets">
+		<form
+			class="flex flex-col w-[30rem] gap-4"
+			hx-post="/api/admin_login"
+			hx-replace-url="/admin"
+			hx-swap="outerHTML transition:true"
+			hx-target="body"
+			hx-target-error="#error"
+		>
+			@components.LabeledInput("Логин", templ.Attributes{"type": "text", "name": "username"}, "")
+			@components.LabeledInput("Пароль", templ.Attributes{"type": "password", "name": "password"}, "")
+			<p class="text-red-400 text-sm h-5" id="error"></p>
+			<button class="submit">
+				Login
+			</button>
+		</form>
+	</div>
+}

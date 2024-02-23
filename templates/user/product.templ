@@ -1,0 +1,50 @@
+package user_templates
+
+import "github.com/w1png/go-htmx-ecommerce-template/models"
+import "fmt"
+import "github.com/w1png/go-htmx-ecommerce-template/templates/components"
+import "github.com/w1png/go-htmx-ecommerce-template/templates/scripts"
+
+script ParseProductDescription(description string) {
+  document.getElementById("description").innerHTML = DOMPurify.sanitize(marked.parse(description));;
+}
+
+templ productPage(product *models.Product, cart_product *models.CartProduct) {
+	@Navbar()
+	<div
+		class="container mx-auto h-screen mt-16 py-4 sample-transition flex flex-row gap-10 overflow-x-hidden"
+		hx-target="body"
+		hx-swap="outerHTML transition:true"
+		hx-boost="true"
+	>
+		<div class="w-80 h-80 overflow-x-scroll flex flex-row snap-x snap-mandatory product-image">
+			for _, image := range product.Images {
+				<img class="object-cover snap-center w-full h-full" src={ fmt.Sprintf("/static/images/%s", image) }/>
+			}
+		</div>
+		<div class="grow flex flex-col gap-4">
+			<h1 class="text-4xl font-bold">{ product.Title }</h1>
+			<div class="flex flex-row gap-2">
+				<h3 class={ "text-2xl", templ.KV("line-through", product.DiscountPrice != -1) }>{ fmt.Sprintf("%d", product.Price) }₽</h3>
+				if product.DiscountPrice != -1 {
+					<h3 class="text-2xl">{ fmt.Sprintf("%d", product.DiscountPrice) }₽</h3>
+				}
+			</div>
+			@components.AddToCartButton(product.ID, cart_product.Quantity)
+			<div id="description" class="product-description py-2"></div>
+			@ParseProductDescription(product.Description)
+		</div>
+	</div>
+}
+
+templ Product(product *models.Product, cart_product *models.CartProduct) {
+	@Base(product.Title) {
+		@productPage(product, cart_product)
+	}
+}
+
+templ ProductApi(product *models.Product, cart_product *models.CartProduct) {
+  @scripts.SetTitle(product.Title)
+  @Navbar()
+  @productPage(product, cart_product)
+}

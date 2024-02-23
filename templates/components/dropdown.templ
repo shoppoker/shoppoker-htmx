@@ -1,0 +1,34 @@
+package components
+
+type Direction int
+
+const (
+	Down Direction = iota
+	Up
+	Left
+	Right
+)
+
+func (d *Direction) GetClass() string {
+	switch *d {
+	case Down:
+		return "top-full left-1/2 translate-x-[-50%]"
+	case Up:
+		return "bottom-full left-1/2 translate-x-[-50%]"
+	case Left:
+		return "left-full top-1/2 translate-y-[-50%]"
+	case Right:
+		return "right-full top-1/2 translate-y-[-50%]"
+	}
+
+	return ""
+}
+
+templ DropDown(component templ.Component, direction Direction) {
+	<div class="group relative dropdown">
+		@component
+		<div style="z-index: 9000;" class={ "absolute top-full left-1/2 translate-x-[-50%] flex overflow-hidden transition-all ease-in-out duration-500 max-h-0 group-hover:max-h-screen", direction.GetClass() }>
+			{ children... }
+		</div>
+	</div>
+}

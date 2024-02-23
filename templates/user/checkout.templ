@@ -1,0 +1,135 @@
+package user_templates
+
+import "github.com/w1png/go-htmx-ecommerce-template/models"
+import "fmt"
+import "github.com/w1png/go-htmx-ecommerce-template/templates/components"
+import "github.com/w1png/go-htmx-ecommerce-template/templates/scripts"
+
+templ CheckoutComplete(order *models.Order) {
+	<div class="container mx-auto min-h-screen flex flex-col items-center justify-center gap-4">
+		<h1>Заказ оформлен</h1>
+		<p>Номер вашего заказа: { fmt.Sprintf("%d", order.ID) }</p>
+		<p>Дата вашего заказа: { order.FormatTime() }</p>
+		<p>Сумма вашего заказа: { fmt.Sprintf("%d", order.GetTotalPrice()) }</p>
+		<table>
+			<thead>
+				<tr>
+					<th>Название</th>
+					<th>Количество</th>
+					<th>Цена</th>
+					<th>Цена со скидкой</th>
+					<th>Итого</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, order_product := range order.Products {
+					<tr>
+						<td>
+							<a href={ templ.SafeURL(fmt.Sprintf("/products/%d", order_product.ID)) }>
+								{ order_product.Name }
+							</a>
+						</td>
+						<td>{ fmt.Sprintf("%d", order_product.Quantity) }</td>
+						<td>{ fmt.Sprintf("%d", order_product.Price) }</td>
+						<td>
+							if order_product.DiscountPrice != -1 {
+								{ fmt.Sprintf("%d", order_product.DiscountPrice) }
+							} else {
+								{ fmt.Sprintf("%d", order_product.Price) }
+							}
+						</td>
+						<td>{ fmt.Sprintf("%d", order_product.GetTotalPrice()) }</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+		<div class="w-full flex flex-row justify-end items-center">
+			<p>Сумма вашего заказа: { fmt.Sprintf("%d", order.GetTotalPrice()) }</p>
+		</div>
+	</div>
+}
+
+func GetForm(d models.DeliveryType) templ.Component {
+	switch d {
+	case models.DeliveryTypePickup:
+		return DeliveryTypePickupForm()
+	case models.DeliveryTypeDelivery:
+		return DeliveryTypeDeliveryForm()
+	default:
+		return DeliveryTypePickupForm()
+	}
+}
+
+templ DeliveryTypePickupForm() {
+	<span id="delivery_type_form"></span>
+}
+
+templ DeliveryTypeDeliveryForm() {
+	<div class="flex flex-col gap-2" id="delivery_type_form">
+		<input
+			type="text"
+			name="adress"
+			id="adress"
+			placeholder="Адрес"
+			class="input w-full"
+			autocomplete="street-adress"
+			requied
+		/>
+		<input type="text" name="city" id="city" placeholder="Город" class="input w-full" required/>
+	</div>
+}
+
+templ checkoutPage() {
+	<div class="container mx-auto min-h-screen p-8 mt-16 sample-transition">
+		<div class="w-full h-full border-2 rounded-xl flex flex-col p-4" id="checkout">
+			<div class="flex flex-col gap-4" id="checkout_products"></div>
+			<form
+				class="flex flex-col gap-2 p-4"
+				hx-post="/api/checkout"
+				hx-target="#checkout"
+				hx-target-error="#checkout_error"
+				hx-indicator="#checkout_loading"
+				hx-swap="outerHTML"
+			>
+				<input type="text" name="name" id="name" class="input w-full" placeholder="ФИО" required/>
+				<input
+					type="text"
+					name="phone_number"
+					id="phone_number"
+					class="input w-full"
+					placeholder="Номер телефона"
+					required
+				/>
+				<input type="email" name="email" id="email" class="input w-full" placeholder="Email" required/>
+				<textarea class="input" name="message" id="email" placeholder="Сообщение"></textarea>
+				<select
+					name="delivery_type"
+					id="delivery_type"
+					hx-get="/api/checkout/delivery_type_form"
+					hx-target="#delivery_type_form"
+					class="input"
+				>
+					for _, delivery_type := range models.DELIVERY_TYPES_ARRAY {
+						<option value={ fmt.Sprintf("%d", delivery_type) }>{ delivery_type.ToString() }</option>
+					}
+				</select>
+				@GetForm(models.DELIVERY_TYPES_ARRAY[0])
+				@components.Loading("checkout_loading")
+				<p id="checkout_error" class="text-sm text-red-400"></p>
+				<button class="submit">Оформить заказ</button>
+			</form>
+		</div>
+	</div>
+}
+
+templ CheckoutApi() {
+	@scripts.SetTitle("Оформление заказа")
+	@Navbar()
+	@checkoutPage()
+}
+
+templ Checkout() {
+	@Base("Оформление заказа") {
+		@checkoutPage()
+	}
+}

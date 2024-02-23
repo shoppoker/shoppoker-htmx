@@ -1,0 +1,8 @@
+package components
+
+templ LabeledTextarea(label, id, name, value, placeholder string) {
+<div class="labeled-input-parent">
+  { label }
+  <textarea id={ id } name={ name } placeholder={ placeholder } class="min-h-40">{ value }</textarea>
+</div>
+}

@@ -1,0 +1,20 @@
+package components
+
+import "github.com/w1png/go-htmx-ecommerce-template/models"
+import "fmt"
+
+templ ProductCard(product *models.Product, class string) {
+	<a class={ fmt.Sprintf("flex flex-col rounded-xl group relative %s", class) } hx-get={ fmt.Sprintf("/api/products/%s", product.Slug) } href={ templ.SafeURL(fmt.Sprintf("/products/%s", product.Slug)) } hx-push-url={ fmt.Sprintf("/products/%s", product.Slug) }>
+		<img class="w-full aspect-square rounded-xl" src={ fmt.Sprintf("/static/images/%s", product.Images[0]) }/>
+		<p class="text-center text-xl group-hover:opacity-0 group-hover:scale-50 transition-all ease-in-out duration-300">{ product.Title }</p>
+		<div class="absolute bg-black/50 background-filter opacity-0 group-hover:opacity-100 background-blur-xl w-full aspect-square rounded-xl text-white transition-all ease-in-out duration-300">
+			<div class="w-full h-full flex flex-col items-center justify-center transition-transform ease-in-out duration-300 scale-50 group-hover:scale-100">
+				<p class="text-2xl">{ product.Title }</p>
+				<p class={ "text-xl", templ.KV("line-through", product.DiscountPrice != -1) }>{ fmt.Sprintf("%d", product.Price) }₽</p>
+				if product.DiscountPrice != -1 {
+					<p class="text-xl">{ fmt.Sprintf("%d", product.DiscountPrice) }₽</p>
+				}
+			</div>
+		</div>
+	</a>
+}

@@ -1,0 +1,30 @@
+package templates
+
+templ Base(title string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<meta http-equiv="x-ua-compatible" content="ie=edge"/>
+			<title>{ title } | UrbanDwellings.ru</title>
+			<meta name="description" content="IskraMusic - Музыкальная площадка"/>
+			<link rel="icon" type="image/png" sizes="32x32" href="/static/favicon.svg"/>
+			<link rel="stylesheet" href="/static/output.css"/>
+			<script src="/static/javascript/htmx.js"></script>
+			<script src="/static/javascript/loading-states.js"></script>
+			<script src="/static/javascript/response-targets.js"></script>
+			<script src="/static/javascript/utils.js"></script>
+			<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
+			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.9.2/min/tiny-slider.js"></script>
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.9.4/tiny-slider.css"/>
+			<link rel="preconnect" href="https://fonts.googleapis.com"/>
+			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+			<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200..900&display=swap" rel="stylesheet"/>
+		</head>
+		<body class="page-transition">
+			{ children... }
+		</body>
+	</html>
+}

@@ -1,0 +1,10 @@
+package admin_templates
+
+import "github.com/w1png/go-htmx-ecommerce-template/templates"
+
+templ Base(title string) {
+	@templates.Base(title) {
+		@Navbar()
+		{ children... }
+	}
+}

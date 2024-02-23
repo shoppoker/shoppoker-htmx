@@ -1,0 +1,15 @@
+package components
+
+import "fmt"
+
+templ Modal(variable string) {
+<div x-show={ variable } x-transition.duration.300ms
+  class="z-50 fixed top-0 right-0 left-0 bottom-0 w-screen h-screen bg-white/30 backdrop-blur-md flex items-center justify-center">
+  <span x-show={ variable } x.transition.delay.100ms x-transition:enter-start="opacity-0 scale-50"
+    x-transition:enter-end="opacity-100 scale-100" x-transition:leave-start="opacity-100 scale-100"
+    x-transition:leave-end="opacity-0 scale-50" @click.outside={ fmt.Sprintf("%s=false", variable) }
+    @keyup.escape.window={ fmt.Sprintf("%s=false", variable) } class="z-50">
+    { children... }
+  </span>
+</div>
+}

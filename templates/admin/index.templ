@@ -1,0 +1,82 @@
+package admin_templates
+
+import "github.com/w1png/go-htmx-ecommerce-template/templates/scripts"
+
+templ indexPage() {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"
+  crossorigin="anonymous"></script>
+<script
+  src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datasource-prometheus@2/dist/chartjs-plugin-datasource-prometheus.umd.min.js"
+  crossorigin="anonymous"></script>
+<div class="container mx-auto mt-16">
+  <div class="flex flex-row">
+    <canvas class="w-1/2" id="myChart"></canvas>
+  </div>
+</div>
+@InitPrometheusChart()
+}
+
+script InitPrometheusChart() {
+Chart.registry.plugins.register(ChartDatasourcePrometheusPlugin);
+
+const endpoint = "http://localhost:6060";
+const baseURL = "/api/v1";
+
+
+var ctx = document.getElementById('myChart').getContext('2d');
+var myChart = new Chart(ctx, {
+type: 'line',
+plugins: [ChartDatasourcePrometheusPlugin],
+options: {
+scales: {
+x: {
+type: 'time',
+time: {
+unit: 'hour'
+},
+title: {
+display: true,
+text: 'Time'
+}
+},
+y: {
+beginAtZero: true,
+title: {
+display: true,
+text: 'Average Request Duration (seconds)'
+}
+}
+},
+plugins: {
+'datasource-prometheus': {
+prometheus: {
+endpoint: endpoint,
+baseURL: baseURL,
+},
+query: `(avg_over_time(echo_request_duration_seconds_sum[1h]) /
+avg_over_time(echo_request_duration_seconds_count[1h]))`,
+timeRange: {
+type: 'relative',
+start: -12 * 60 * 60 * 1000, // 12 hours ago
+end: 0, // until now
+},
+step: '1m', // Ensure data is fetched for each hour
+},
+},
+},
+});
+
+}
+
+templ Index() {
+@Base("Админ панель") {
+@indexPage()
+}
+}
+
+templ IndexApi() {
+@scripts.SetTitle("Админ панель")
+@Navbar()
+@indexPage()
+}

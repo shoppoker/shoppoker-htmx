@@ -1,0 +1,138 @@
+package admin_templates
+
+import "github.com/w1png/go-htmx-ecommerce-template/models"
+import "github.com/w1png/go-htmx-ecommerce-template/templates/components/icons"
+import "fmt"
+import "github.com/w1png/go-htmx-ecommerce-template/templates/scripts"
+import "github.com/w1png/go-htmx-ecommerce-template/templates/components"
+
+templ Category(category *models.Category) {
+<div class="admin-object-card-parent justify-between p-2" id={ fmt.Sprintf("category_%d", category.ID) }>
+  <span class="text-xl truncate">{ category.Name }</span>
+  <div class="flex flex-row gap-2">
+    <button class="submit h-12 group" hx-get={ fmt.Sprintf("/admin/api/categories/%d/edit", category.ID) }
+      hx-target="#edit-category-target" hx-swap="innerHTML">
+      @icons.Edit("h-6 aspect-square text-white group-hover:text-accent block md:hidden")
+      <span class="hidden md:block">Редактировать</span>
+    </button>
+    <button class="delete h-12 group" hx-get={ fmt.Sprintf("/admin/api/categories/%d/delete", category.ID) }
+      hx-target="#delete-category-target" hx-swap="innerHTML">
+      @icons.Delete("h-6 aspect-square text-white group-hover:text-delete block md:hidden")
+      <span class="hidden md:block">Удалить</span>
+    </button>
+  </div>
+</div>
+}
+
+templ CategoriesList(categories []*models.Category, next_page int, search string) {
+for _, category := range categories {
+@Category(category)
+}
+if len(categories) == models.CATEGORIES_PER_PAGE {
+<span class="hidden" hx-get={ fmt.Sprintf("/admin/api/categories/page/%d?search=%s", next_page, search) }
+  hx-target="#category-list" hx-swap="beforeend" hx-trigger="revealed" hx-indicator="#pagination-loading"></span>
+}
+}
+
+templ AddCategoryModal(categories []*models.Category) {
+@components.Modal("add_category_modal_open") {
+<span hx-ext="response-targets" x-init="add_category_modal_open = true" hx-ext="response-targets">
+  <form hx-post="/admin/api/categories" hx-target="#category-list" hx-swap="afterbegin" hx-target-error="#add-error"
+    class="w-[min(30rem,90vw)] bg-white rounded-2xl border-2 border-accent flex flex-col gap-2 p-6" x-data="{ name: '' }">
+      @components.LabeledInput("Название", templ.Attributes{"type": "text", "name": "name", "x-model": "name"}, "w-full")
+      @components.LabeledInput("Ссылка", templ.Attributes{"type":"text", "name": "slug", "x-init": "$watch('name', name => $el.value = rus_to_latin(name))"}, "w-full")
+      @components.LabeledInput("Тэги", templ.Attributes{"type": "text", "name": "tags"}, "w-full")
+    <label>
+      Родительская категория
+      <select class="select" name="parent_id">
+        <option value="0">Без родительской категории</option>
+        for _, category := range categories {
+        <option value={ fmt.Sprintf("%d", category.ID) }>{ category.Name }</option>
+        }
+      </select>
+    </label>
+    @components.Checkbox("Отображается", "add-is_enabled", "is_enabled", "true", true)
+    <p id="error" class="add-error"></p>
+    <button class="submit" x-on:htmx:after-swap.window="add_category_modal_open = false">Добавить</button>
+  </form>
+</span>
+}
+}
+
+templ EditCategoryModal(category *models.Category, categories []*models.Category) {
+@components.Modal("edit_category_modal_open") {
+<span hx-ext="response-targets" x-init="edit_category_modal_open = true" hx-ext="response-targets">
+  <form hx-put={ fmt.Sprintf("/admin/api/categories/%d", category.ID) } hx-target={ fmt.Sprintf("#category_%d",
+    category.ID) } hx-swap="outerHTML" hx-target-error="#edit-error"
+    class="w-[min(30rem,90vw)] bg-white rounded-2xl border-2 border-accent flex flex-col gap-2 p-6">
+    @components.LabeledInput("Название", templ.Attributes{"value": category.Name, "type": "text", "name": "name"}, "w-full")
+    @components.LabeledInput("Ссылка", templ.Attributes{"value": category.Slug, "type":"text", "name": "slug"}, "w-full")
+    @components.LabeledInput("Тэги", templ.Attributes{"value": category.Tags, "type": "text", "name": "tags"}, "w-full")
+    <label>
+      Родительская категория
+      <select class="select" name="parent_id">
+        <option value="0" selected?={ category.ParentId==0 }>Без родительской категории</option>
+        for _, parent_category := range categories {
+        if parent_category.ID != category.ID {
+        <option value={ fmt.Sprintf("%d", parent_category.ID) } selected?={ category.ParentId==parent_category.ID }>
+          { parent_category.Name }
+        </option>
+        }
+        }
+      </select>
+    </label>
+    @components.Checkbox("Отображается", "edit-is_enabled", "is_enabled", "true", category.IsEnabled)
+    <p id="error" class="edit-error"></p>
+    <button class="submit" x-on:htmx:after-swap.window="edit_category_modal_open = false">Сохранить</button>
+  </form>
+</span>
+}
+}
+
+templ DeleteCategoryModal(category *models.Category) {
+@components.Modal("delete_category_modal_open") {
+<span hx-ext="response-targets" x-init="delete_category_modal_open = true">
+  <div class="w-[min(30rem,90vw)] bg-white rounded-2xl border-2 border-accent flex flex-col gap-4 p-6">
+    <h3 class="font-bold text-2xl">Удаление категории</h3>
+    <hr />
+    <p class="text-subtext">Вы уверены, что хотите удалить категорию { category.Name }?</p>
+    <div class="w-full flex flex-row gap-2">
+      <button hx-target={ fmt.Sprintf("#category_%d", category.ID) } hx-swap="outerHTML" class="delete" hx-delete={
+        fmt.Sprintf("/admin/api/categories/%d", category.ID) }
+        @click="delete_category_modal_open = false">Удалить</button>
+      <button class="submit" @click="delete_category_modal_open = false">Отмена</button>
+    </div>
+  </div>
+</span>
+}
+}
+
+templ categoriesPage(categories []*models.Category, search string) {
+<span x-data="{ add_category_modal_open: false }" id="add-category-target"></span>
+<span x-data="{ edit_category_modal_open: false }" id="edit-category-target"></span>
+<span x-data="{ delete_category_modal_open: false }" id="delete-category-target"></span>
+<div class="container mx-auto p-4 flex flex-col gap-6 mt-16">
+  <div class="flex flex-row gap-2">
+    <input type="text" class="input" name="search" placeholder="Поиск" hx-post="/admin/api/categories/search"
+      hx-target="#category-list" hx-swap="innerHTML" hx-trigger="input changed delay:500ms, search" value={ search } />
+    <button class="submit" hx-get="/admin/api/categories/add" hx-target="#add-category-target"
+      hx-swap="innerHTML">Добавить</button>
+  </div>
+  <div class="flex flex-col gap-2" id="category-list">
+    @CategoriesList(categories, 2, search)
+  </div>
+  <p class="htmx-indicator" id="pagination-loading">Загрузка...</p>
+</div>
+}
+
+templ CategoriesApi(categories []*models.Category, search string) {
+@scripts.SetTitle("Категории")
+@Navbar()
+@categoriesPage(categories, search)
+}
+
+templ Categories(categories []*models.Category, search string) {
+@Base("Категории") {
+@categoriesPage(categories, search)
+}
+}

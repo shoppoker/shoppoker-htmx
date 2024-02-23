@@ -1,0 +1,8 @@
+package components
+
+templ LabeledInput(label string, attrs templ.Attributes, div_class string) {
+<label class={ "labeled-input-parent" , div_class }>
+  { label }
+  <input { attrs... } />
+</label>
+}
