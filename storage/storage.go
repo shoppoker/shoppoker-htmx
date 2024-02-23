@@ -61,5 +61,6 @@ func InitStorage() error {
 		&models.Category{},
 		&models.Product{},
 		&models.OrderProduct{},
+		&models.CustomChipBase{},
 	)
 }

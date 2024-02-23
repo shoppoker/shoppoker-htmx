@@ -1,0 +1,131 @@
+package admin_templates
+
+import "fmt"
+import "github.com/w1png/go-htmx-ecommerce-template/models"
+import "github.com/w1png/go-htmx-ecommerce-template/templates/scripts"
+import "github.com/w1png/go-htmx-ecommerce-template/templates/components"
+import "github.com/w1png/go-htmx-ecommerce-template/templates/components/icons"
+
+templ CustomChipBase(custom_chip_base *models.CustomChipBase) {
+<div class="admin-object-card-parent justify-between p-2" id={ fmt.Sprintf("custom_chip_base_%d", custom_chip_base.ID) }>
+  <img class="h-full aspect-square rounded-md" src={ custom_chip_base.VectorImage.GetUrl("image", "svg+xml" ) } onerror="this.src='/static/image.svg'" />
+  <span class="text-xl truncate">{ custom_chip_base.Title }</span>
+  <div class="flex flex-row gap-2">
+    <button class="submit h-12 group" hx-get={ fmt.Sprintf("/admin/api/custom_chip_bases/%d/edit", custom_chip_base.ID) } hx-target="#edit-custom_chip_base-target" hx-swap="innerHTML">
+      @icons.Edit("h-6 aspect-square text-white group-hover:text-accent block md:hidden")
+      <span class="hidden md:block">Редактировать</span>
+    </button>
+    <button class="delete h-12 group" hx-get={ fmt.Sprintf("/admin/api/custom_chip_bases/%d/delete",
+      custom_chip_base.ID) } hx-target="#delete-custom_chip_base-target" hx-swap="innerHTML">
+      @icons.Delete("h-6 aspect-square text-white group-hover:text-delete block md:hidden")
+      <span class="hidden md:block">Удалить</span>
+    </button>
+  </div>
+</div>
+}
+
+templ AddCustomChipBaseModal() {
+@components.Modal("add_custom_chip_base_modal_open") {
+<span hx-ext="response-targets" x-init="add_custom_chip_base_modal_open = true" hx-ext="response-targets">
+  <form hx-post="/admin/api/custom_chip_bases" hx-target="#custom_chip_base-list" hx-swap="afterbegin"
+    hx-target-error="#add-error"
+    class="max-h-[90vh] overflow-y-scroll w-[min(30rem,90vw)] bg-white rounded-2xl border-2 border-accent flex flex-col gap-2 p-6"
+    x-data="{ name: '' }"
+    hx-encoding="multipart/form-data"
+    >
+    <div class="w-full flex flex-col gap-2" x-data="{ 'preview_scale': 0.5 }">
+      <label class="w-full aspect-square rounded-2xl group cursor-pointer" x-data="{ image_url: '' }">
+        <div class="w-full h-full rounded-2xl bg-secondary flex items-center justify-center group-hover:scale-105"
+          x-show="!image_url">
+          <img src="/static/image.svg" class="h-12 aspect-square" />
+        </div>
+        <div class="relative w-full h-full" x-show="image_url">
+          <img class="absolute top-0 left-0 z-20 w-full aspect-square object-contain" x-bind:src="image_url" />
+          <div class="absolute top-0 left-0 z-10 w-full aspect-square flex items-center justify-center">
+            <div class="w-full h-full rounded-full border-2 border-accent bg-secondary"
+              x-init="$watch('preview_scale', preview_scale => $el.style.scale = preview_scale)"></div>
+          </div>
+        </div>
+        <input type="file" accept="image/*" name="image" @change="image_url = URL.createObjectURL($el.files[0])" />
+      </label>
+      <div class="flex flex-row gap-2 w-full">
+        <input class="grow" type="range" name="sticker_scale" min="0.1" max="1" x-bind:value="preview_scale" step="0.01"
+          x-model="preview_scale" />
+        <input class="h-5 w-12" type="text" x-bind:value="preview_scale" x-model="preview_scale" />
+      </div>
+    </div>
+    @components.LabeledInput("Название", templ.Attributes{"type": "text", "name": "title", "x-model": "name"}, "w-full")
+    @components.LabeledInput("Ссылка", templ.Attributes{"type": "text", "name": "slug", "x-init": "$watch('name', name => $el.value = rus_to_latin(name))"}, "w-full")
+    @components.LabeledInput("Цена", templ.Attributes{"type": "number", "name": "price"}, "w-full")
+    @components.LabeledInput("Цена со скидкой (0 - без скидки)", templ.Attributes{"type": "number", "name":
+    "discount_price"}, "w-full")
+    @components.LabeledInput("Цена с крутым ламинатом", templ.Attributes{"type": "number", "name": "price_foil"},
+    "w-full")
+    @components.LabeledInput("Цена с крутым ламинатом со скидкой (0 - без скидки)", templ.Attributes{"type": "number",
+    "name": "discount_price_foil"}, "w-full")
+    @components.LabeledTextarea("Описание", templ.Attributes{"name": "description"}, "")
+    @components.Checkbox("Отображается", "add-is_enabled", "is_enabled", "true", true)
+    <p id="add-error" class="error"></p>
+    <button class="submit" x-on:htmx:after-swap.window="add_custom_chip_base_modal_open = false">Добавить</button>
+  </form>
+</span>
+}
+}
+
+templ EditCustomChipBaseModal(custom_chip_base *models.CustomChipBase) {
+}
+
+templ DeleteCustomChipBaseModal(custom_chip_base *models.CustomChipBase) {
+@components.Modal("delete_custom_chip_base_modal_open") {
+<span hx-ext="response-targets" x-init="delete_custom_chip_base_modal_open = true">
+  <div class="w-[min(30rem,90vw)] bg-white rounded-2xl border-2 border-accent flex flex-col gap-4 p-6">
+    <h3 class="font-bold text-2xl">Удаление категории</h3>
+    <hr />
+    <p class="text-subtext">Вы уверены, что хотите удалить основу { custom_chip_base.Title }?</p>
+    <div class="w-full flex flex-row gap-2">
+      <button hx-target={ fmt.Sprintf("#custom_chip_base_%d", custom_chip_base.ID) } hx-swap="outerHTML" class="delete" hx-delete={
+        fmt.Sprintf("/admin/api/custom_chip_bases/%d", custom_chip_base.ID) }
+        @click="delete_custom_chip_base_modal_open = false">Удалить</button>
+      <button class="submit" @click="delete_custom_chip_base_modal_open = false">Отмена</button>
+    </div>
+  </div>
+</span>
+}
+}
+
+templ CustomChipBasesList(custom_chip_bases []*models.CustomChipBase) {
+for _, custom_chip_base := range custom_chip_bases {
+@CustomChipBase(custom_chip_base)
+}
+}
+
+templ customChipBasesPage(custom_chip_bases []*models.CustomChipBase, search string) {
+<span x-data="{ add_custom_chip_base_modal_open: false }" id="add-custom_chip_base-target"></span>
+<span x-data="{ edit_custom_chip_base_modal_open: false }" id="edit-custom_chip_base-target"></span>
+<span x-data="{ delete_custom_chip_base_modal_open: false }" id="delete-custom_chip_base-target"></span>
+<div class="container mx-auto p-4 flex flex-col gap-6 mt-16">
+  <div class="flex flex-row gap-2">
+    <input type="text" class="input" name="search" placeholder="Поиск" hx-post="/admin/api/custom_chip_bases/search"
+      hx-target="#custom_chip_base-list" hx-swap="innerHTML" hx-trigger="input changed delay:500ms, search" value={
+      search } />
+    <button class="submit" hx-get="/admin/api/custom_chip_bases/add" hx-target="#add-custom_chip_base-target"
+      hx-swap="innerHTML">Добавить</button>
+  </div>
+  <div class="flex flex-col gap-2" id="custom_chip_base-list">
+    @CustomChipBasesList(custom_chip_bases)
+  </div>
+  <p class="htmx-indicator" id="pagination-loading">Загрузка...</p>
+</div>
+}
+
+templ CustomChipBases(custom_chip_bases []*models.CustomChipBase, search string) {
+@Base("Основы для фишек") {
+@customChipBasesPage(custom_chip_bases, search)
+}
+}
+
+templ CustomChipBasesApi(custom_chip_bases []*models.CustomChipBase, search string) {
+@scripts.SetTitle("Основы для фишек")
+@Navbar()
+@customChipBasesPage(custom_chip_bases, search)
+}

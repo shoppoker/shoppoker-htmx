@@ -1,0 +1,25 @@
+package admin_templates
+
+import "github.com/w1png/go-htmx-ecommerce-template/models"
+import "github.com/w1png/go-htmx-ecommerce-template/templates/scripts"
+
+templ AddExampleModal() {
+}
+
+templ ExamplesList(examples []*models.Example, search string, next_page int) {
+}
+
+templ examplesPage(examples []*models.Example, search string) {
+}
+
+templ Examples(examples []*models.Example, search string) {
+@Base("Примеры работ") {
+@examplesPage(examples, search)
+}
+}
+
+templ ExamplesApi(examples []*models.Example, search string) {
+@scripts.SetTitle("Примеры работ")
+@Navbar()
+@examplesPage(examples, search)
+}

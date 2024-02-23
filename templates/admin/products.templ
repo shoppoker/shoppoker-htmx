@@ -69,7 +69,7 @@ templ AddProductModal(categories []*models.Category) {
           }
         </select>
       </label>
-      @components.LabeledTextarea("Описание", "add-description", "description", "", "")
+      @components.LabeledTextarea("Описание", templ.Attributes{"name": "description"}, "")
       @components.Checkbox("Отображается", "add-is_enabled", "is_enabled", "true", true)
       @components.Checkbox("На главной", "add-is_featured", "if_featured", "true", false)
       <p id="error" class="error"></p>
@@ -121,7 +121,7 @@ templ EditProductModal(product *models.Product, categories []*models.Category) {
           }
         </select>
       </label>
-      @components.LabeledTextarea("Описание", "edit-description", "description", product.Description, "")
+      @components.LabeledTextarea("Описание", templ.Attributes{"name": "description"}, product.Description)
       @components.Checkbox("Отображается", "edit-is_enabled", "is_enabled", "true", product.IsEnabled)
       @components.Checkbox("На главной", "edit-is_featured", "if_featured", "true", product.IsFeatured)
       <p id="error" class="error"></p>
