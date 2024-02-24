@@ -2,17 +2,16 @@ package user_handlers
 
 import (
 	"net/http"
-	"reflect"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
-	"github.com/w1png/go-htmx-ecommerce-template/errors"
 	"github.com/w1png/go-htmx-ecommerce-template/models"
 	"github.com/w1png/go-htmx-ecommerce-template/storage"
 	"github.com/w1png/go-htmx-ecommerce-template/templates/components"
 	user_templates "github.com/w1png/go-htmx-ecommerce-template/templates/user"
 	"github.com/w1png/go-htmx-ecommerce-template/utils"
+	"gorm.io/gorm"
 )
 
 func GatherCartRoutes(user_page_group *echo.Echo, user_api_group, admin_page_group, admin_api_group *echo.Group) {
@@ -28,11 +27,11 @@ func GetCartHandler(c echo.Context) error {
 		}
 	}
 
-	for _, cart_product := range cart_products {
-		if cart_product.Product.StockType == models.StockTypeOutOfStock {
-			cart_product.Quantity = 0
-		}
-	}
+	// for _, cart_product := range cart_products {
+	// 	if cart_product.Product.StockType == models.StockTypeOutOfStock {
+	// 		cart_product.Quantity = 0
+	// 	}
+	// }
 
 	return utils.Render(c, user_templates.CartProducts(cart_products))
 }
@@ -47,7 +46,7 @@ func ChangeCartProductQuantityHandler(c echo.Context) error {
 
 	var product *models.Product
 	if err := storage.GormStorageInstance.DB.Where("id = ?", product_id).First(&product).Error; err != nil {
-		if reflect.TypeOf(err) == reflect.TypeOf(&errors.ObjectNotFoundError{}) {
+		if err == gorm.ErrRecordNotFound {
 			return c.String(http.StatusNotFound, "Товар не найден")
 		}
 		log.Error(err)
@@ -62,8 +61,9 @@ func ChangeCartProductQuantityHandler(c echo.Context) error {
 
 	var cart_product *models.CartProduct
 	if err := storage.GormStorageInstance.DB.Where("product_id = ? AND cart_id = ?", product_id, cart.ID).First(&cart_product).Error; err != nil {
-		if reflect.TypeOf(err) == reflect.TypeOf(&errors.ObjectNotFoundError{}) {
-			return c.String(http.StatusNotFound, "Товар не найден")
+		if err != gorm.ErrRecordNotFound {
+			log.Error(err)
+			return err
 		}
 
 		cart_product = models.NewCartProduct(
@@ -73,20 +73,25 @@ func ChangeCartProductQuantityHandler(c echo.Context) error {
 			product.Title,
 			product.Price,
 			product.DiscountPrice,
+			product.Thumbnails[0],
 			0,
 		)
 	}
 
-	if should_decrease && cart_product.Quantity > 0 {
+	if should_decrease {
 		cart_product.Quantity--
 	} else {
 		cart_product.Quantity++
 	}
 
-	if err := storage.GormStorageInstance.DB.Save(&cart_product).Error; err != nil {
+	if cart_product.Quantity < 0 {
+		cart_product.Quantity = 0
+	}
+
+	if err = storage.GormStorageInstance.DB.Save(&cart_product).Error; err != nil {
 		log.Error(err)
 		return err
 	}
 
-	return utils.Render(c, components.AddToCartButton(cart_product.Product.ID, cart_product.Quantity))
+	return utils.Render(c, components.AddToCartButton(cart_product.ProductId, cart_product.Quantity))
 }

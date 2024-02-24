@@ -3,25 +3,68 @@ package user_templates
 import "github.com/w1png/go-htmx-ecommerce-template/models"
 import "github.com/w1png/go-htmx-ecommerce-template/templates/components"
 import "github.com/w1png/go-htmx-ecommerce-template/templates/scripts"
+import "fmt"
+
+func constructBreadcrumbCategoryArray(category_title string) []components.BreadcrumbElement {
+  return []components.BreadcrumbElement{
+    {
+      Title: "Главная",
+      Url: "/",
+      RequestUrl: "/api/index",
+    },
+    {
+      Title: category_title,
+      RequestUrl: fmt.Sprintf("/api/category/%s", category_title),
+      Url: fmt.Sprintf("/category/%s", category_title),
+    },
+  }
+}
+
+templ ProductList(products []*models.Product, slug string, page int, sort string) {
+  for _, product := range products {
+    <span 
+      class="scale-x-50 opacity-0"
+      data-intersection-observer="opacity-0 scale-x-50"
+      data-intersection-observer-delay="300"
+    >
+      @intersectionObserver()
+      @components.ProductCard(product, "max-w-[300px]")
+    </span>
+    <span
+      hx-get={ fmt.Sprintf("/api/categories/%s/products/page/%d?sort=%s", slug, page, sort) }
+      hx-swap="beforeend"
+      hx-target="#product-list"
+      hx-trigger="revealed"
+      class="hidden"
+    >
+    </span>
+  }
+}
 
 templ categoryPage(category *models.Category) {
-<div class={ "container mx-auto h-screen mt-20 sample-transition flex flex-col gap-10" , templ.KV("items-center justify-center", len(category.Products)==0 && len(category.Children)==0) } hx-target="body"
+<div class={ "container mx-auto h-screen mt-24 flex flex-col gap-10 px-4" , templ.KV("items-center justify-center", len(category.Products)==0 && len(category.Children)==0) } hx-target="body"
   hx-swap="outerHTML transition:true" hx-boost="true">
-  if len(category.Children) == 0 && len(category.Products) == 0 {
-  <p class="text-5xl font-bold">Тут ничего нет</p>
-  }
-  <h1 class="text-5xl font-bold">{ category.Name }</h1>
-  <div class="w-full grid grid-cols-5 grid-flow-row gap-4 overflow-x-scroll flex-shrink-0 snap-x snap-mandatory">
-    for _, child := range category.Children {
-    @components.CategoryCard(child, "max-w-[300px] card-load snap-center ")
-    }
+  <div class="flex flex-col xl:flex-row w-full justify-between gap-4">
+    <div class="flex flex-col gap-4">
+      <h1 class="text-5xl font-bold">{ category.Name }</h1>
+      @components.Breadcrumb(constructBreadcrumbCategoryArray(category.Name))
+    </div>
+    <select
+      name="sort"
+      class="select w-full xl:w-fit h-fit"
+      hx-get={fmt.Sprintf("/api/categories/%s/products/page/1", category.Slug)}
+      hx-swap="innerHTML" hx-target="#product-list"
+    >
+      <option value="recommended" selected>Рекомендуем</option>
+      <option value="asc">Сначала дешевле</option>
+      <option value="desc">Сначала дороже</option>
+    </select>
   </div>
-  <div class="w-full grid grid-cols-4 grid-flow-row items-stretch gap-2">
-    for _, product := range category.Products {
-    @components.ProductCard(product, "max-w-[300px] card-load")
-    }
+  <div class="w-full grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch" id="product-list">
+    @ProductList(category.Products, category.Slug, 2, "recommended")
   </div>
 </div>
+@intersectionObserver()
 }
 
 templ Category(category *models.Category) {

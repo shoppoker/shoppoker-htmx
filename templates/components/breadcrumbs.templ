@@ -1,0 +1,23 @@
+package components
+
+type BreadcrumbElement struct {
+Title string
+Url string
+RequestUrl string
+}
+
+templ Breadcrumb(breadcrumbs []BreadcrumbElement) {
+<ol class="flex flex-row gap-2 items-center" hx-boost="true" hx-target="body" hx-swap="outerHTML transition:true">
+  for i, breadcumb := range breadcrumbs {
+  <li class="flex flex-row gap-2 items-center">
+    <a class="hover:text-subtext" href={ templ.SafeURL(breadcumb.Url) } hx-push-url={ breadcumb.Url } hx-get={
+      breadcumb.RequestUrl }>
+      if i > 0 {
+      { "- " }
+      }
+      { breadcumb.Title }
+    </a>
+  </li>
+  }
+</ol>
+}

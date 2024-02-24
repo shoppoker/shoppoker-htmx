@@ -22,6 +22,8 @@ func GatherProductsRoutes(user_page_group *echo.Echo, user_api_group, admin_page
 	admin_api_group.POST("/products", PostProductHandler)
 	admin_api_group.GET("/products/:id/edit", EditProductModalHandler)
 	admin_api_group.PUT("/products/:id", PutProductHandler)
+	admin_api_group.GET("/products/:id/delete", DeleteProductModalHandler)
+	admin_api_group.DELETE("/products/:id", DeleteProductHandler)
 }
 
 func ProductsHandler(c echo.Context) error {
@@ -366,4 +368,31 @@ func PutProductHandler(c echo.Context) error {
 	}
 
 	return utils.Render(c, admin_templates.Product(product))
+}
+
+func DeleteProductModalHandler(c echo.Context) error {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Неправильный запрос")
+	}
+
+	var product *models.Product
+	if err := storage.GormStorageInstance.DB.First(&product, id).Error; err != nil {
+		return err
+	}
+
+	return utils.Render(c, admin_templates.DeleteProductModal(product))
+}
+
+func DeleteProductHandler(c echo.Context) error {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Неправильный запрос")
+	}
+
+	if err := storage.GormStorageInstance.DB.Delete(&models.Product{}, id).Error; err != nil {
+		return err
+	}
+
+	return c.NoContent(http.StatusOK)
 }

@@ -36,6 +36,19 @@ func (s StockType) ToString() string {
 	}
 }
 
+func (s StockType) Color() string {
+	switch s {
+	case StockTypeInStock:
+		return "text-in-stock"
+	case StockTypeOutOfStock:
+		return "text-out-of-stock"
+	case StockTypeOrder:
+		return "text-order"
+	default:
+		return ""
+	}
+}
+
 type Product struct {
 	gorm.Model
 
@@ -89,4 +102,8 @@ func NewProduct(
 		IsEnabled:     is_enabled,
 		IsFeatured:    is_featured,
 	}
+}
+
+func (product *Product) AfterFind(tx *gorm.DB) error {
+	return tx.Where("id = ?", product.CategoryId).First(&product.Category).Error
 }

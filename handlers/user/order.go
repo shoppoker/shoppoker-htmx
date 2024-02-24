@@ -105,7 +105,7 @@ func PostOrderHandler(c echo.Context) error {
 		}
 
 		order_product := models.NewOrderProduct(
-			cart_product.Product.ID,
+			cart_product.ProductId,
 			order.ID,
 			cart_product.Slug,
 			cart_product.Title,

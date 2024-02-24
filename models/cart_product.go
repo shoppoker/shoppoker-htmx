@@ -9,12 +9,12 @@ type CartProduct struct {
 
 	ID        uint
 	ProductId uint
-	Product   *Product `gorm:"foreignKey:ProductId"`
 	CartID    uint
 
 	Slug          string
 	Title         string
 	Price         int
+	Thumbnail     string
 	DiscountPrice int
 	Quantity      int
 }
@@ -26,6 +26,7 @@ func NewCartProduct(
 	name string,
 	price int,
 	discount_price int,
+	thumbnail string,
 	quantity int,
 ) *CartProduct {
 	return &CartProduct{
@@ -36,11 +37,13 @@ func NewCartProduct(
 		Price:         price,
 		DiscountPrice: discount_price,
 		Quantity:      quantity,
+		Thumbnail:     thumbnail,
 	}
 }
 
 func (c *CartProduct) AfterFind(tx *gorm.DB) error {
-	err := tx.Model(&Product{}).Where("id = ?", c.ProductId).First(&c.Product).Error
+	var product Product
+	err := tx.Model(&Product{}).Where("id = ?", c.ProductId).First(&product).Error
 	if err == nil {
 		if err != gorm.ErrRecordNotFound {
 			return err
@@ -52,10 +55,14 @@ func (c *CartProduct) AfterFind(tx *gorm.DB) error {
 		return nil
 	}
 
-	c.Slug = c.Product.Slug
-	c.Title = c.Product.Title
-	c.Price = c.Product.Price
-	c.DiscountPrice = c.Product.DiscountPrice
+	if product.StockType == StockTypeOutOfStock {
+		c.Quantity = 0
+	}
+
+	c.Slug = product.Slug
+	c.Title = product.Title
+	c.Price = product.Price
+	c.DiscountPrice = product.DiscountPrice
 
 	if err = tx.Save(c).Error; err != nil {
 		return nil

@@ -26,9 +26,12 @@ func IndexApiHandler(c echo.Context) error {
 
 func IndexHandler(c echo.Context) error {
 	var featured_products []*models.Product
-	if err := storage.GormStorageInstance.DB.Where("is_featured = ?", true).Find(&featured_products).Error; err != nil {
+	if err := storage.GormStorageInstance.DB.Where("is_featured = ? and is_enabled = ?", true, true).Find(&featured_products).Error; err != nil {
 		return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
 	}
+
+	featured_products = append(featured_products, featured_products...)
+	featured_products = append(featured_products, featured_products...)
 
 	return utils.Render(c, user_templates.Index(featured_products))
 }
