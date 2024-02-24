@@ -15,7 +15,7 @@ var STOCK_TYPES_ARRAY = []StockType{
 	StockTypeOrder,
 }
 
-const PRODUCTS_PER_PAGE = 1
+const PRODUCTS_PER_PAGE = 2
 
 const (
 	StockTypeInStock StockType = iota
@@ -63,7 +63,7 @@ type Product struct {
 	Tags          string
 
 	CategoryId uint
-	Category   Category `gorm:"foreignKey:CategoryId"`
+	Category   Category `gorm:"-"`
 
 	Images     pq.StringArray `gorm:"type:text[]"`
 	Thumbnails pq.StringArray `gorm:"type:text[]"`

@@ -2,13 +2,22 @@ package components
 
 import "fmt"
 
+templ PlusMinusCartButtons(product_id uint, quantity int) {
+}
+
 templ AddToCartButton(product_id uint, quantity int) {
-  <div hx-target="this" hx-swap="outerHTML" class="flex flex-row justify-between xl:justify-start gap-2 w-full">
-    <button class="submit h-12" hx-put={ fmt.Sprintf("/api/cart/change_quantity/%d", product_id) }>Добавить в корзину</button>
-    <div class="rounded-xl h-12 bg-secondary flex flex-row items-center justify-center gap-2 px-4">
-      <img class="hover:scale-105 cursor-pointer aspect-square h-5" src="/static/minus.svg" hx-put={ fmt.Sprintf("/api/cart/change_quantity/%d?decrease=true", product_id) } />
-      <p class="h-full px-2 w-12 flex items-center justify-center text-center">{ fmt.Sprintf("%d", quantity) }</p>
-      <img class="cursor-pointer hover:scale-105 aspect-square h-5" src="/static/plus.svg" hx-put={ fmt.Sprintf("/api/cart/change_quantity/%d?increase=true", product_id) } />
-    </div>
+<div hx-target="this" hx-swap="outerHTML" class="flex flex-row justify-between xl:justify-start gap-2 w-full h-12">
+  if quantity == 0 {
+  <button class="submit h-12" hx-put={ fmt.Sprintf("/api/cart/change_quantity/%d", product_id) }>Добавить в
+    корзину</button>
+  } else {
+  <div class="rounded-xl h-full bg-secondary flex flex-row items-center justify-center gap-2 px-4 w-fit">
+    <img class="hover:scale-105 cursor-pointer aspect-square h-5" src="/static/minus.svg" hx-put={
+      fmt.Sprintf("/api/cart/change_quantity/%d?decrease=true", product_id) } />
+    <p class="h-full px-2 w-12 flex items-center justify-center text-center">{ fmt.Sprintf("%d", quantity) }</p>
+    <img class="cursor-pointer hover:scale-105 aspect-square h-5" src="/static/plus.svg" hx-put={
+      fmt.Sprintf("/api/cart/change_quantity/%d?increase=true", product_id) } />
   </div>
+  }
+</div>
 }

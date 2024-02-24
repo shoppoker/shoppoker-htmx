@@ -3,6 +3,7 @@ package user_handlers
 import (
 	"net/http"
 	"strconv"
+	"sync"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
@@ -17,6 +18,31 @@ import (
 func GatherCartRoutes(user_page_group *echo.Echo, user_api_group, admin_page_group, admin_api_group *echo.Group) {
 	user_api_group.GET("/cart", GetCartHandler)
 	user_api_group.PUT("/cart/change_quantity/:product_id", ChangeCartProductQuantityHandler)
+	user_api_group.GET("/cart/clear", ClearCartHandler)
+}
+
+func ClearCartHandler(c echo.Context) error {
+	var cart_products []*models.CartProduct
+	for _, cart_product := range utils.GetCartFromContext(c.Request().Context()).Products {
+		if cart_product.Quantity != 0 {
+			cart_products = append(cart_products, cart_product)
+		}
+	}
+
+	wg := sync.WaitGroup{}
+	for _, cart_product := range cart_products {
+		wg.Add(1)
+		go func(cart_product *models.CartProduct, wg *sync.WaitGroup) {
+			cart_product.Quantity = 0
+			if err := storage.GormStorageInstance.DB.Save(cart_product).Error; err != nil {
+				log.Error(err)
+			}
+			wg.Done()
+		}(cart_product, &wg)
+	}
+	wg.Wait()
+
+	return utils.Render(c, user_templates.CartProducts(cart_products))
 }
 
 func GetCartHandler(c echo.Context) error {
@@ -27,11 +53,25 @@ func GetCartHandler(c echo.Context) error {
 		}
 	}
 
-	// for _, cart_product := range cart_products {
-	// 	if cart_product.Product.StockType == models.StockTypeOutOfStock {
-	// 		cart_product.Quantity = 0
-	// 	}
-	// }
+	wg := sync.WaitGroup{}
+	for _, cart_product := range cart_products {
+		wg.Add(1)
+		go func(cart_product *models.CartProduct, wg *sync.WaitGroup) {
+			var product *models.Product
+			if err := storage.GormStorageInstance.DB.Where("id = ?", cart_product.ProductId).First(&product).Error; err != nil {
+				wg.Done()
+				return
+			}
+			if product.StockType == models.StockTypeOutOfStock {
+				cart_product.Quantity = 0
+			}
+			if err := storage.GormStorageInstance.DB.Save(cart_product).Error; err != nil {
+				log.Error(err)
+			}
+			wg.Done()
+		}(cart_product, &wg)
+	}
+	wg.Wait()
 
 	return utils.Render(c, user_templates.CartProducts(cart_products))
 }

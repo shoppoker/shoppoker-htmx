@@ -1,35 +1,150 @@
 package user_templates
 
 import "github.com/w1png/go-htmx-ecommerce-template/templates/components"
-
-templ categoriesButton() {
-<p class="text-2xl cursor-pointer select-none hover:text-gray-600 whitespace-nowrap">Категории</p>
-}
-
-script SetBackgroundOnScroll() {
-document.addEventListener("scroll", function () {
-if (window.scrollY > 0) {
-document.getElementById("navbar").classList.add("bg-white");
-} else {
-document.getElementById("navbar").classList.remove("bg-white");
-}
-});
-}
+import "github.com/w1png/go-htmx-ecommerce-template/settings"
+import "github.com/w1png/go-htmx-ecommerce-template/utils"
+import "fmt"
 
 templ Navbar() {
-<div class="fixed top-0 right-0 left-0 w-screen h-16 z-40 border-b border-border" id="navbar">
-  <div class="container mx-auto h-full flex items-center justify-between gap-2 z-20 px-4" hx-target="body"
-    hx-swap="outerHTML transition:true" hx-boost="true">
-    <a href="/" hx-get="/api/index" hx-push-url="/" class="h-full hover:scale-105 flex items-center">
-      <img class="h-1/2" src="/static/logo.svg" />
-    </a>
-    <div class="h-full grow flex items-center justify-end gap-8">
-      @components.NavbarButton("Главная", "/", "/api/index")
-      @components.NavbarButton("Категории", "/categories", "/api/categories")
-      @components.NavbarButton("О нас", "/about", "/api/about")
-      @components.NavbarButton("Контакты", "/contacts", "/api/contacts")
-    </div>
-  </div>
-</div>
-@SetBackgroundOnScroll()
+	<span
+		x-data="{ cart_open: false, categories_open: false, navbar_open: false }"
+		x-init="$watch('cart_open', cart_open => document.body.classList.toggle('overflow-hidden', cart_open))"
+	>
+		<div class="fixed top-0 right-0 left-0 w-screen h-16 z-40 border-b border-border bg-white" id="navbar">
+			<div
+				class="container mx-auto h-full flex items-center justify-between gap-2 z-20 px-4"
+				hx-target="body"
+				hx-swap="outerHTML transition:true"
+				hx-boost="true"
+			>
+				<img class="h-8 xl:hidden" src="/static/bars.svg" x-show="!navbar_open" @click="navbar_open = !navbar_open"/>
+				<img
+					class="h-8 xl:hidden"
+					src="/static/close.svg"
+					x-cloak
+					x-show="navbar_open"
+					@click="navbar_open = !navbar_open"
+				/>
+				<a href="/" hx-get="/api/index" hx-push-url="/" class="h-full hover:scale-105 flex items-center">
+					<img class="h-1/2" src="/static/logo.svg"/>
+				</a>
+				<div class="h-full grow items-center justify-center gap-8 hidden xl:flex">
+					@components.NavbarButton("Главная", "/", "/api/index", "text-sm")
+					<span @click="categories_open = !categories_open">
+						<div class="w-fit h-fit flex flex-col group items-center text-sm md:text-base text-nowrap">
+							<p class="text-sm">Категории</p>
+							<div class="max-w-0 group-hover:max-w-full w-full h-0.5 bg-black"></div>
+						</div>
+					</span>
+					@components.NavbarButton("Примеры работ", "/examples", "/api/examples", "text-sm")
+					@components.NavbarButton("Контакты", "/contacts", "/api/contacts", "text-sm")
+				</div>
+				<div class="flex flex-row gap-8 h-full items-center justify-end">
+					<a
+						href={ templ.SafeURL("tel:" + settings.SettingsInstance.PhoneNumber) }
+						class="h-full hover:scale-105 gap-2 hidden xl:flex flex-row items-center justify-center"
+					>
+						<img class="h-4 aspect-square" src="/static/phone.svg"/>{ settings.SettingsInstance.PhoneNumber }
+					</a>
+					<button class="h-8">
+						<img class="h-full hover:scale-105 aspect-square" src="/static/search.svg"/>
+					</button>
+					<img
+						class="h-8 aspect-square cursor-pointer hover:scale-105"
+						src="/static/cart.svg"
+						@click="cart_open = !cart_open"
+					/>
+				</div>
+			</div>
+		</div>
+		@Cart()
+		<div
+			class="flex flex-row fixed w-screen h-[calc(100svh-4rem)] left-0 right-0 top-16 bottom-0 bg-black/30 z-50"
+			x-show="navbar_open"
+			x-cloak
+		>
+			<div
+				class="h-screen md:max-w-[28rem] w-screen bg-white flex flex-col p-4"
+				@click.outside="navbar_open = false"
+				hx-boost="true"
+				hx-target="body"
+				hx-swap="outerHTML transition:true"
+				x-show="navbar_open"
+				x-transition-delay.300ms
+				x-transition:enter-start="opacity-0 scale-x-90 -translate-x-full"
+				x-transition:enter-end="opacity-100 scale-x-100 -translate-x-0"
+				x-transition:leave-start="opacity-100 scale-x-100 -translate-x-0"
+				x-transition:leave-end="opacity-0 scale-x-90 -translate-x-full"
+			>
+				for _, main_category := range utils.GetCategoriesFromContext(ctx) {
+					<div class="flex flex-col" x-data="{ subcategories_open: false }">
+						<strong class="flex flex-row justify-between w-full">
+							@components.NavbarButton(main_category.Name, fmt.Sprintf("/categories/%s", main_category.Slug),
+								fmt.Sprintf("/api/categories/%s", main_category.Slug), "text-2xl")
+							if len(main_category.Children) > 0 {
+								<img
+									class="h-full aspect-square cursor-pointer"
+									src="/static/carret.svg"
+									@click="subcategories_open = !subcategories_open"
+								/>
+							}
+						</strong>
+						<div class="flex flex-col overflow-hidden px-4" :class="subcategories_open ? 'max-h-full' : 'max-h-0'">
+							for _, child := range main_category.Children {
+								<span @click="subcategories_open = false">
+									@components.NavbarButton(child.Name, fmt.Sprintf("/categories/%s", child.Slug),
+										fmt.Sprintf("/api/categories/%s", child.Slug), "text-xl")
+								</span>
+							}
+						</div>
+					</div>
+				}
+			</div>
+		</div>
+		<div
+			class="fixed top-16 left-0 right-0 bottom-0 w-screen h-[calc(100svh-4rem)] bg-black/30 flex flex-col z-40"
+			x-cloak
+			x-show="categories_open"
+			hx-boost="true"
+			hx-target="body"
+			hx-swap="outerHTML transition:true"
+		>
+			<div
+				class="w-full min-h-80 bg-white"
+				@click.outside="categories_open = false"
+				x-transition-delay.300ms
+				x-show="categories_open"
+				x-transition:enter-start="opacity-0 max-h-0"
+				x-transition:enter-end="opacity-100 max-h-80"
+				x-transition:leave-start="opacity-100 max-h-80"
+				x-transition:leave-end="opacity-0 max-h-0"
+			>
+				<div class="container mx-auto grid grid-cols-3 gap-4 p-4">
+					for _, main_category := range utils.GetCategoriesFromContext(ctx) {
+						<div class="flex flex-col" x-data="{ subcategories_open: false }">
+							<strong class="flex flex-row w-full gap-4">
+								@components.NavbarButton(main_category.Name, fmt.Sprintf("/categories/%s", main_category.Slug),
+									fmt.Sprintf("/api/categories/%s", main_category.Slug), "text-2xl")
+								if len(main_category.Children) > 0 {
+									<img
+										class="h-full aspect-square cursor-pointer"
+										src="/static/carret.svg"
+										@click="subcategories_open = !subcategories_open"
+									/>
+								}
+							</strong>
+							<div class="flex flex-col overflow-hidden px-4" :class="subcategories_open ? 'max-h-full' : 'max-h-0'">
+								for _, child := range main_category.Children {
+									<span @click="subcategories_open = false">
+										@components.NavbarButton(child.Name, fmt.Sprintf("/categories/%s", child.Slug),
+											fmt.Sprintf("/api/categories/%s", child.Slug), "text-xl")
+									</span>
+								}
+							</div>
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+	</span>
 }

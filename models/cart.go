@@ -14,7 +14,7 @@ type Cart struct {
 }
 
 func (c *Cart) AfterFind(tx *gorm.DB) error {
-	if err := tx.Model(&CartProduct{}).Where("cart_id = ?", c.ID).Find(&c.Products).Error; err != nil {
+	if err := tx.Model(&CartProduct{}).Where("cart_id = ?", c.ID).Order("created_at ASC").Find(&c.Products).Error; err != nil {
 		return err
 	}
 	return nil

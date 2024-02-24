@@ -293,7 +293,7 @@ func PutProductHandler(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Неправильный запрос")
 	}
 
-	if category_id != 0 {
+	if category_id == 0 {
 		if err := storage.GormStorageInstance.DB.First(&models.Category{}, category_id).Error; err != nil {
 			return c.String(http.StatusBadRequest, "Неправильный запрос")
 		}

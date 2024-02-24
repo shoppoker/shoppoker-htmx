@@ -11,10 +11,13 @@ templ ProductCard(product *models.Product, class string) {
   product.Slug) }
 		href={ templ.SafeURL(fmt.Sprintf("/products/%s", product.Slug)) }
 		hx-push-url={ fmt.Sprintf("/products/%s", product.Slug) }
+    x-id="['product-preview']"
 	>
 		<img
-			class="w-full aspect-video rounded-xl object-cover group-hover:scale-105"
+			class="w-full aspect-video rounded-xl object-cover group-hover:scale-105 bg-secondary"
 			src={ file_storage.ObjectStorageId(product.Images[0]).GetUrl("image", "webp") }
+      x-init="!$el.complete && $el.classList.add('animate-pulse')"
+      @load="$el.classList.remove('animate-pulse')"
 		/>
 		<p class={ product.StockType.Color(), "w-full text-center" }>{ product.StockType.ToString() }</p>
 		<p class="w-full text-2xl font-bold">

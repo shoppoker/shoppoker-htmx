@@ -1,0 +1,95 @@
+package user_templates
+
+import "github.com/w1png/go-htmx-ecommerce-template/models"
+import "github.com/w1png/go-htmx-ecommerce-template/file_storage"
+import "github.com/w1png/go-htmx-ecommerce-template/templates/scripts"
+import "github.com/w1png/go-htmx-ecommerce-template/templates/components"
+import "fmt"
+
+templ ExampleCard(example *models.Example) {
+<div class="max-w-[300px] select-none flex flex-col gap-4 opacity-0 scale-x-50" x-id="['preview-slider']"
+  data-intersection-observer="opacity-0 scale-x-50" data-intersection-observer-delay="300">
+  @intersectionObserver()
+  <div :id="$id('preview-slider')" x-init="createSlider($id('preview-slider'))">
+    for _, image := range example.Images {
+    <img class="rounded-xl w-full aspect-video bg-secondary object-cover" src={
+      file_storage.ObjectStorageId(image).GetUrl("image", "webp" ) }
+      x-init="!$el.complete && $el.classList.add('animate-pulse')" @load="$el.classList.remove('animate-pulse')" />
+    }
+  </div>
+  <p class="text-2xl font-bold">{ example.Title }</p>
+</div>
+}
+
+templ ExamplesList(examples []*models.Example, next_page int) {
+for _, example := range examples {
+@ExampleCard(example)
+}
+if len(examples) == models.EXAMPLES_PER_PAGE {
+<span class="hidden" hx-get={ fmt.Sprintf("/api/examples/page/%d", next_page) } hx-target="#examples-list"
+  hx-swap="beforeend" hx-trigger="revealed"></span>
+}
+}
+
+func constructBreadcrumbExamplesArray() []components.BreadcrumbElement {
+return []components.BreadcrumbElement{
+{
+Title: "Главная",
+Url: "/",
+RequestUrl: "/api/index",
+},
+{
+Title: "Примеры работ",
+Url: "/examples",
+RequestUrl: "/api/examples",
+},
+}
+}
+
+templ examplesPage(examples []*models.Example, next_page int) {
+<div class="container mx-auto mt-24" hx-boost="true" hx-target="body" hx-swap="innerHTML transition:true">
+  <script>
+    var createSlider = (id) => {
+      var slider = tns({
+        container: `#${id}`,
+        items: 1,
+        slideBy: "page",
+        rewind: "true",
+        controls: false,
+        nav: false,
+
+        autoplay: true,
+        autoplayTimeout: 5000,
+        autoplayHoverPause: true,
+        autoplayButtonOutput: false,
+
+        mouseDrag: true,
+        loop: false,
+      });
+    }
+  </script>
+  <div class="flex flex-col gap-10 px-4 py-6">
+    <div class="flex flex-col gap-4">
+      <h1 class="font-bold text-5xl">Примеры работ</h1>
+      @components.Breadcrumb(constructBreadcrumbExamplesArray())
+    </div>
+    <div class="w-full gap-4 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" id="examples-list">
+      @ExamplesList(examples, next_page)
+    </div>
+  </div>
+</div>
+}
+
+templ ExamplesApi(examples []*models.Example) {
+@scripts.SetTitle("Примеры работ")
+@Navbar()
+@examplesPage(examples, 2)
+}
+
+templ Examples(examples []*models.Example) {
+@Base("Примеры работ") {
+@scripts.SetTitle("Примеры работ")
+@Navbar()
+@examplesPage(examples, 2)
+}
+}

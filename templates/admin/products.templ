@@ -10,14 +10,14 @@ import "github.com/w1png/go-htmx-ecommerce-template/file_storage"
 templ Product(product *models.Product) {
 <div class="admin-object-card-parent justify-between p-2" id={ fmt.Sprintf("product_%d", product.ID) }>
   <div class="flex gap-2 h-full items-center">
-  if len(product.Thumbnails) > 0 {
+    if len(product.Thumbnails) > 0 {
     <img class="h-full aspect-square rounded-md" src={
       file_storage.ObjectStorageId(product.Thumbnails[0]).GetUrl("image", "webp" ) } />
-  } else {
-  <div class="h-full bg-secondary aspect-square rounded-md flex items-center justify-center">
-  <img clas="h-1/4 aspect-square" src="/static/image.svg" />
-  </div>
-  }
+    } else {
+    <div class="h-full bg-secondary aspect-square rounded-md flex items-center justify-center">
+      <img clas="h-1/4 aspect-square" src="/static/image.svg" />
+    </div>
+    }
     <span class="text-xl truncate">{ product.Title }</span>
   </div>
   <div class="flex flex-row gap-2 items-center">
@@ -42,14 +42,19 @@ templ AddProductModal(categories []*models.Category) {
     hx-encoding="multipart/form-data"
     class="w-[min(60rem,90vw)] bg-white rounded-2xl border-2 border-accent flex flex-row gap-2 p-6">
     <div class="flex flex-col gap-2 w-1/2" x-data="{ title: '' }">
-    <label class="submit">
-    <span id="image-upload-text-">Загрузить изображения</span>
-    <input class="hidden" type="file" accept="image/*" name="images" @change="document.getElementById('image-upload-text-').innerText = `Загружено ${$el.files.length} изображений`" multiple/>
-    </label>
-      @components.LabeledInput("Название", templ.Attributes{"type": "text", "name": "title", "x-model": "title"}, "w-full")
-      @components.LabeledInput("Ссылка", templ.Attributes{"type": "text", "name": "slug", "x-init": "$watch('title', title => $el.value = rus_to_latin(title))"}, "w-full")
+      <label class="submit">
+        <span id="image-upload-text-">Загрузить изображения</span>
+        <input class="hidden" type="file" accept="image/*" name="images"
+          @change="document.getElementById('image-upload-text-').innerText = `Загружено ${$el.files.length} изображений`"
+          multiple />
+      </label>
+      @components.LabeledInput("Название", templ.Attributes{"type": "text", "name": "title", "x-model": "title"},
+      "w-full")
+      @components.LabeledInput("Ссылка", templ.Attributes{"type": "text", "name": "slug", "x-init":
+      "$watch('title',title => $el.value = rus_to_latin(title))"}, "w-full")
       @components.LabeledInput("Цена", templ.Attributes{"type": "number", "name": "price", "value": "0"}, "w-full")
-      @components.LabeledInput("Цена со скидкой (0 - без скидки)", templ.Attributes{"type": "number", "name": "discount_price", "value": "0"}, "w-full")
+      @components.LabeledInput("Цена со скидкой (0 - без скидки)", templ.Attributes{"type": "number", "name":
+      "discount_price", "value": "0"}, "w-full")
       @components.LabeledInput("Тэги", templ.Attributes{"type": "text", "name": "tags"}, "w-full")
     </div>
     <div class="flex flex-col gap-2 w-1/2">
@@ -65,7 +70,7 @@ templ AddProductModal(categories []*models.Category) {
         Наличие
         <select name="stock_type" id="add-stock_type" class="select">
           for _, stock_type := range models.STOCK_TYPES_ARRAY {
-          <option value={ fmt.Sprintf("%d", stock_type) }> { stock_type.ToString() }</option>
+          <option value={ fmt.Sprintf("%d", stock_type) }>{ stock_type.ToString() }</option>
           }
         </select>
       </label>
@@ -75,7 +80,6 @@ templ AddProductModal(categories []*models.Category) {
       <p id="error" class="error"></p>
       <button class="submit" x-on:htmx:after-swap.window="add_product_modal_open = false">Добавить</button>
     </div>
-
   </form>
 </span>
 }
@@ -89,9 +93,7 @@ templ DeleteProductModal(product *models.Product) {
     <hr />
     <p class="text-subtext">Вы уверены, что хотите удалить товар { product.Title }?</p>
     <div class="w-full flex flex-row gap-2">
-      <button hx-target={ fmt.Sprintf("#product_%d", product.ID) } hx-swap="outerHTML" class="delete" hx-delete={
-        fmt.Sprintf("/admin/api/products/%d", product.ID) }
-        @click="delete_product_modal_open = false">Удалить</button>
+      <button hx-target={ fmt.Sprintf("#product_%d", product.ID) } hx-swap="outerHTML" class="delete" hx-delete={ fmt.Sprintf("/admin/api/products/%d", product.ID) } @click="delete_product_modal_open = false">Удалить</button>
       <button class="submit" @click="delete_product_modal_open = false">Отмена</button>
     </div>
   </div>
@@ -102,32 +104,41 @@ templ DeleteProductModal(product *models.Product) {
 templ EditProductModal(product *models.Product, categories []*models.Category) {
 @components.Modal("edit_product_modal_open") {
 <span hx-ext="response-targets" x-init="edit_product_modal_open = true">
-  <form hx-put={ fmt.Sprintf("/admin/api/products/%d", product.ID) } hx-target={ fmt.Sprintf("#product_%d", product.ID) } hx-swap="outerHTML" hx-target-error="#error"
-    hx-encoding="multipart/form-data"
+  <form hx-put={ fmt.Sprintf("/admin/api/products/%d", product.ID) } hx-target={ fmt.Sprintf("#product_%d", product.ID) } hx-swap="outerHTML" hx-target-error="#error" hx-encoding="multipart/form-data"
     class="w-[min(60rem,90vw)] bg-white rounded-2xl border-2 border-accent flex flex-row gap-2 p-6">
     <div class="flex flex-col gap-2 w-1/2">
-    <div class="flex flex-row gap-1">
-      for _, thumbnail := range product.Thumbnails {
-        <img class="h-12 aspect-square object-cover rounded-md" src={ file_storage.ObjectStorageId(thumbnail).GetUrl("image", "webp") } />
-      }
-          <label class="submit">
-    <span id="edit-image-upload-text-">Загрузить изображения</span>
-    <input class="hidden" type="file" accept="image/*" name="images" @change="document.getElementById('edit-image-upload-text-').innerText = `Загружено ${$el.files.length} изображений`" multiple/>
-    </label>
-
-    </div>
-      @components.LabeledInput("Название", templ.Attributes{"type": "text", "name": "title", "value": product.Title}, "w-full")
-      @components.LabeledInput("Ссылка", templ.Attributes{"type": "text", "name": "slug", "value": product.Slug}, "w-full")
-      @components.LabeledInput("Цена", templ.Attributes{"type": "number", "name": "price", "value": fmt.Sprintf("%d", product.Price)}, "w-full")
-      @components.LabeledInput("Цена со скидкой (0 - без скидки)", templ.Attributes{"type": "number", "name": "discount_price", "value": fmt.Sprintf("%d", product.DiscountPrice)}, "w-full")
-      @components.LabeledInput("Тэги", templ.Attributes{"type": "text", "name": "tags", "value": product.Tags}, "w-full")
+      <div class="flex flex-row gap-1">
+        for _, thumbnail := range product.Thumbnails {
+        <img class="h-12 aspect-square object-cover rounded-md" src={
+          file_storage.ObjectStorageId(thumbnail).GetUrl("image", "webp" ) } />
+        }
+        <label class="submit">
+          <span id="edit-image-upload-text-">Загрузить изображения</span>
+          <input class="hidden" type="file" accept="image/*" name="images"
+            @change="document.getElementById('edit-image-upload-text-').innerText = `Загружено ${$el.files.length} изображений`"
+            multiple />
+        </label>
+      </div>
+      @components.LabeledInput("Название", templ.Attributes{"type": "text", "name": "title", "value": product.Title},
+      "w-full")
+      @components.LabeledInput("Ссылка", templ.Attributes{"type": "text", "name": "slug", "value": product.Slug},
+      "w-full")
+      @components.LabeledInput("Цена", templ.Attributes{"type": "number", "name": "price", "value": fmt.Sprintf("%d",
+      product.Price)}, "w-full")
+      @components.LabeledInput("Цена со скидкой (0 - без скидки)", templ.Attributes{"type": "number", "name":
+      "discount_price", "value": fmt.Sprintf("%d", product.DiscountPrice)}, "w-full")
+      @components.LabeledInput("Тэги", templ.Attributes{"type": "text", "name": "tags", "value": product.Tags},
+      "w-full")
     </div>
     <div class="flex flex-col gap-2 w-1/2">
       <label>
         Категория
+        { fmt.Sprintf("selected category: %d", product.CategoryId) }
         <select name="category" id="edit-category" class="select">
           for _, category := range categories {
-          <option value={ fmt.Sprintf("%d", category.ID) }>{ category.Name }</option>
+          <option value={ fmt.Sprintf("%d", category.ID) } selected?={ category.ID==product.CategoryId }>
+            { category.Name }
+          </option>
           }
         </select>
       </label>
@@ -135,7 +146,10 @@ templ EditProductModal(product *models.Product, categories []*models.Category) {
         Наличие
         <select name="stock_type" id="edit-stock_type" class="select">
           for _, stock_type := range models.STOCK_TYPES_ARRAY {
-          <option value={ fmt.Sprintf("%d", stock_type) }> { stock_type.ToString() }</option>
+          <option value={ fmt.Sprintf("%d", stock_type) } selected?={ stock_type==product.StockType }>
+            {
+            stock_type.ToString() }
+          </option>
           }
         </select>
       </label>
@@ -145,7 +159,6 @@ templ EditProductModal(product *models.Product, categories []*models.Category) {
       <p id="error" class="error"></p>
       <button class="submit" x-on:htmx:after-swap.window="edit_product_modal_open = false">Добавить</button>
     </div>
-
   </form>
 </span>
 }
@@ -164,7 +177,7 @@ if len(products) == models.PRODUCTS_PER_PAGE {
 templ productsApi(products []*models.Product, search string) {
 <span x-data="{ add_product_modal_open: false }" id="add-product-target"></span>
 <span id="edit-product-target" x-data="{ edit_product_modal_open: false }"></span>
-<span id="delete-product-target" x-data="{ delete_product_modal_open: false }"></span>products.templ
+<span id="delete-product-target" x-data="{ delete_product_modal_open: false }"></span>
 <div class="container mx-auto p-4 flex flex-col gap-6 mt-16">
   <div class="flex flex-row gap-2">
     <input type="text" class="input" name="search" placeholder="Поиск" hx-post="/admin/api/products/search"

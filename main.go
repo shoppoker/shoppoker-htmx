@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/w1png/go-htmx-ecommerce-template/config"
+	"github.com/w1png/go-htmx-ecommerce-template/email"
 	"github.com/w1png/go-htmx-ecommerce-template/file_storage"
 	"github.com/w1png/go-htmx-ecommerce-template/models"
 	"github.com/w1png/go-htmx-ecommerce-template/settings"
@@ -41,6 +42,10 @@ func main() {
 	}
 
 	if err := settings.InitSettings(); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := email.InitEmailServer(); err != nil {
 		log.Fatal(err)
 	}
 

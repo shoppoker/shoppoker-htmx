@@ -1,0 +1,17 @@
+package email_templates
+
+import "fmt"
+import "github.com/w1png/go-htmx-ecommerce-template/settings"
+import "github.com/w1png/go-htmx-ecommerce-template/models"
+
+templ OrderConfirmation(order *models.Order) {
+<div>
+  Заказ №{ fmt.Sprintf("%d", order.ID) } оформлен. По вопросам о вашем заказе пишите нам на электронную почту <a href={
+    templ.SafeURL(fmt.Sprintf("mailto:%s", settings.SettingsInstance.Email)) }>{ settings.SettingsInstance.Email }</a>
+  или звоните по телефону
+  <a href={ templ.SafeURL(fmt.Sprintf("tel:%s", settings.SettingsInstance.PhoneNumber)) }>
+    {
+    settings.SettingsInstance.PhoneNumber }
+  </a>
+</div>
+}

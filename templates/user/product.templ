@@ -5,37 +5,63 @@ import "fmt"
 import "github.com/w1png/go-htmx-ecommerce-template/templates/components"
 import "github.com/w1png/go-htmx-ecommerce-template/templates/scripts"
 import "github.com/w1png/go-htmx-ecommerce-template/file_storage"
+import "github.com/w1png/go-htmx-ecommerce-template/storage"
 
 script ParseProductDescription(description string) {
 document.getElementById("description").innerHTML = DOMPurify.sanitize(marked.parse(description));;
 }
 
 func constructBreadcrumbArray(product *models.Product) []components.BreadcrumbElement {
-return []components.BreadcrumbElement{
-{Title: "Главная", Url: "/", RequestUrl: "/api/index"},
-{Title: product.Category.Name, Url: fmt.Sprintf("/categories/%s", product.Category.Slug),
-RequestUrl: fmt.Sprintf("/api/categories/%s", product.Category.Slug)},
-{Title: product.Title, Url: fmt.Sprintf("/products/%s", product.Slug), RequestUrl: fmt.Sprintf("/api/products/%s",
-product.Slug)},
-}
+	elements := []components.BreadcrumbElement{
+		{
+			Title:      "Главная",
+			Url:        "/",
+			RequestUrl: "/api/index",
+		},
+	}
+
+	if product.Category.ParentId != 0 {
+    var parent *models.Category
+    if err := storage.GormStorageInstance.DB.First(&parent, product.Category.ParentId).Error; err == nil {
+      elements = append(elements, components.BreadcrumbElement{
+        Title:      parent.Name,
+        Url:        fmt.Sprintf("/categories/%s", parent.Slug),
+        RequestUrl: fmt.Sprintf("/api/categories/%s", parent.Slug),
+      })
+    }
+	}
+
+	elements = append(elements, components.BreadcrumbElement{
+		Title:      product.Category.Name,
+		Url:        fmt.Sprintf("/categories/%s", product.Category.Slug),
+		RequestUrl: fmt.Sprintf("/api/categories/%s", product.Category.Slug),
+	},
+		components.BreadcrumbElement{
+			Title:      product.Title,
+			Url:        fmt.Sprintf("/products/%s", product.Slug),
+			RequestUrl: fmt.Sprintf("/api/products/%s", product.Slug),
+		},
+	)
+
+  return elements
 }
 
 func constructImagesDataTag(product *models.Product) string {
-res := "["
-images_length := len(product.Images)
-for i, image := range product.Images {
-res += fmt.Sprintf("'%s'", file_storage.ObjectStorageId(image).GetUrl("image", "webp"))
-if i != images_length-1 {
-res += ","
-}
-}
+	res := "["
+	images_length := len(product.Images)
+	for i, image := range product.Images {
+		res += fmt.Sprintf("'%s'", file_storage.ObjectStorageId(image).GetUrl("image", "webp"))
+		if i != images_length-1 {
+			res += ","
+		}
+	}
 
-res += "]"
-return res
+	res += "]"
+	return res
 }
 
 templ productPage(product *models.Product, cart_product *models.CartProduct) {
-<script>
+	<script>
   const selectImage = (current_index, images, selected_index) => {
     if (current_index == selected_index) {
       return
@@ -56,54 +82,94 @@ templ productPage(product *models.Product, cart_product *models.CartProduct) {
     }, 200)
   }
 </script>
-<div class="container mx-auto mt-24 flex flex-col gap-8 min-h-screen px-4" x-data={ fmt.Sprintf("{ images: %s, selected_image_index: 0 }", constructImagesDataTag(product)) }>
-  <div class="flex flex-col gap-4">
-    <h1 class="text-5xl font-bold">{ product.Title }</h1>
-    @components.Breadcrumb(constructBreadcrumbArray(product))
-  </div>
-  <div class="flex flex-col xl:flex-row gap-8 xl:gap-4">
-    <div class="flex flex-col-reverse xl:flex-row gap-2 xl:w-2/3 overflow-x-hidden">
-      <div class="flex flex-row xl:flex-col gap-2 w-28 bg-white h-full opacity-0 -translate-x-full z-20" data-intersection-observer="-translate-x-full opacity-0" data-intersection-observer-delay="100">
-        for i, thumbnail := range product.Thumbnails {
-        <img src={ file_storage.ObjectStorageId(thumbnail).GetUrl("image", "webp" ) } id={ fmt.Sprintf("thumbnail-%d", i) } class={ "w-full aspect-video rounded-md object-cover border-2 hover:border-accent", templ.KV("border-accent", i==0), templ.KV("border-text", i !=0) } @mouseover={ fmt.Sprintf("selectImage(selected_image_index, images, %d); selected_image_index = %d", i, i) } />
-        }
-      </div>
-      <img src={ file_storage.ObjectStorageId(product.Images[0]).GetUrl("image", "webp" ) }
-        class="w-full xl:w-[calc(100%-7.5rem)] z-10 aspect-video rounded-xl object-cover scale-x-50 opacity-0" id="main-image" @load="$el.classList.remove('opacity-0')" data-intersection-observer="scale-x-50 opacity-0" data-intersection-observer-delay="400" />
-    </div>
-    <div class="flex flex-col gap-4 xl:gap-2 w-full xl:w-1/3">
-      <div class="flex flex-row gap-2 font-bold text-3xl items-end opacity-0 scale-x-50" data-intersection-observer="opacity-0 scale-x-50" data-intersection-observer-delay="300">
-        if product.DiscountPrice != -1 {
-        <p>{ fmt.Sprintf("%d", product.DiscountPrice) }₽</p>
-        }
-        <p class={ templ.KV("line-through text-xl", product.DiscountPrice !=-1) }>
-          { fmt.Sprintf("%d", product.Price) }₽
-        </p>
-      </div>
-      <div class="flex flex-row opacity-0 scale-x-50" data-intersection-observer="opacity-0 scale-x-50" data-intersection-observer-delay="400">
-      @components.AddToCartButton(product.ID, cart_product.Quantity)
-      </div>
-      <p class={ product.StockType.Color(), "opacity-0 scale-x-50" } data-intersection-observer="opacity-0 scale-x-50" data-intersection-observer-delay="500">{ product.StockType.ToString() }</p>
-      <div class="flex flex-col gap-1 opacity-0 scale-x-50" data-intersection-observer="opacity-0 scale-x-50" data-intersection-observer-delay="600">
-        <p class="text-xl">Описание</p>
-        <div id="description" class="markdown">
-          @ParseProductDescription(product.Description)
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-@intersectionObserver()
+	<div
+		class="container mx-auto mt-24 flex flex-col gap-8 min-h-screen px-4"
+		x-data={ fmt.Sprintf("{ images: %s, selected_image_index: 0 }", constructImagesDataTag(product)) }
+	>
+		<div class="flex flex-col gap-4">
+			<h1 class="text-5xl font-bold">{ product.Title }</h1>
+			@components.Breadcrumb(constructBreadcrumbArray(product))
+		</div>
+		<div class="flex flex-col xl:flex-row gap-8 xl:gap-4">
+			<div class="flex flex-col-reverse xl:flex-row gap-2 xl:w-2/3 overflow-x-hidden">
+				<div
+					class="flex flex-row xl:flex-col gap-2 w-28 bg-white h-full opacity-0 -translate-x-full z-20"
+					data-intersection-observer="-translate-x-full opacity-0"
+					data-intersection-observer-delay="100"
+				>
+					for i, thumbnail := range product.Thumbnails {
+						<img
+							src={ file_storage.ObjectStorageId(thumbnail).GetUrl("image", "webp") }
+							id={ fmt.Sprintf("thumbnail-%d",
+          i) }
+							class={ "w-full aspect-video rounded-md object-cover border-2 hover:border-accent" ,
+          templ.KV("border-accent", i==0), templ.KV("border-text", i !=0) }
+							@mouseover={ fmt.Sprintf("selectImage(selected_image_index, images, %d); selected_image_index=%d", i, i) }
+						/>
+					}
+				</div>
+				<img
+					src={ file_storage.ObjectStorageId(product.Images[0]).GetUrl("image", "webp") }
+					class="w-full xl:w-[calc(100%-7.5rem)] z-10 aspect-video rounded-xl object-cover scale-x-50 opacity-0"
+					id="main-image"
+					@load="$el.classList.remove('opacity-0')"
+					data-intersection-observer="scale-x-50 opacity-0"
+					data-intersection-observer-delay="400"
+				/>
+			</div>
+			<div class="flex flex-col gap-4 xl:gap-2 w-full xl:w-1/3">
+				<div
+					class="flex flex-row gap-2 font-bold text-3xl items-end opacity-0 scale-x-50"
+					data-intersection-observer="opacity-0 scale-x-50"
+					data-intersection-observer-delay="300"
+				>
+					if product.DiscountPrice != -1 {
+						<p>{ fmt.Sprintf("%d", product.DiscountPrice) }₽</p>
+					}
+					<p class={ templ.KV("line-through text-xl", product.DiscountPrice != -1) }>
+						{ fmt.Sprintf("%d", product.Price) }₽
+					</p>
+				</div>
+				<div
+					class="flex flex-row opacity-0 scale-x-50"
+					data-intersection-observer="opacity-0 scale-x-50"
+					data-intersection-observer-delay="400"
+				>
+          if product.StockType == models.StockTypeOutOfStock {
+            <button class="submit-disabled" disabled>Добавить в корзину</button>
+          } else {
+            @components.AddToCartButton(product.ID, cart_product.Quantity)
+          }
+				</div>
+				<p
+					class={ product.StockType.Color(), "opacity-0 scale-x-50" }
+					data-intersection-observer="opacity-0 scale-x-50"
+					data-intersection-observer-delay="500"
+				>{ product.StockType.ToString() }</p>
+				<div
+					class="flex flex-col gap-1 opacity-0 scale-x-50"
+					data-intersection-observer="opacity-0 scale-x-50"
+					data-intersection-observer-delay="600"
+				>
+					<p class="text-xl">Описание</p>
+					<div id="description" class="markdown">
+						@ParseProductDescription(product.Description)
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	@intersectionObserver()
 }
 
 templ Product(product *models.Product, cart_product *models.CartProduct) {
-@Base(product.Title) {
-@productPage(product, cart_product)
-}
+	@Base(product.Title) {
+		@productPage(product, cart_product)
+	}
 }
 
 templ ProductApi(product *models.Product, cart_product *models.CartProduct) {
-@scripts.SetTitle(product.Title)
-@Navbar()
-@productPage(product, cart_product)
+	@scripts.SetTitle(product.Title)
+	@Navbar()
+	@productPage(product, cart_product)
 }

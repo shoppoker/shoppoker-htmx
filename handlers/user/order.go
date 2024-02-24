@@ -1,13 +1,17 @@
 package user_handlers
 
 import (
+	"bytes"
+	"context"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
+	email_server "github.com/w1png/go-htmx-ecommerce-template/email"
 	"github.com/w1png/go-htmx-ecommerce-template/models"
 	"github.com/w1png/go-htmx-ecommerce-template/storage"
+	email_templates "github.com/w1png/go-htmx-ecommerce-template/templates/emails"
 	user_templates "github.com/w1png/go-htmx-ecommerce-template/templates/user"
 	"github.com/w1png/go-htmx-ecommerce-template/utils"
 )
@@ -51,7 +55,7 @@ func PostOrderHandler(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Имя не может быть пустым")
 	}
 
-	message := c.FormValue("name")
+	message := c.FormValue("message")
 	phone_number := c.FormValue("phone_number")
 	if !utils.ValidatePhoneNumber(phone_number) {
 		return c.String(http.StatusBadRequest, "Неправильный формат номера телефона")
@@ -129,6 +133,19 @@ func PostOrderHandler(c echo.Context) error {
 	}
 
 	order.Products = order_products
+
+	go func(order *models.Order) {
+		var buffer bytes.Buffer
+		if err := email_templates.OrderConfirmation(order).Render(context.Background(), &buffer); err != nil {
+			log.Error(err)
+			return
+		}
+
+		if err := email_server.EmailServerInstance.SendHTML([]string{order.Email}, "Заказ на сайте ShopPoker.ru", buffer.String(), ""); err != nil {
+			log.Error(err)
+			return
+		}
+	}(order)
 
 	c.Response().Header().Del("HX-Reswap")
 

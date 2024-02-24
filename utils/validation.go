@@ -3,7 +3,7 @@ package utils
 import "regexp"
 
 func ValidatePhoneNumber(phone_number string) bool {
-	re := regexp.MustCompile(`^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$`)
+	re := regexp.MustCompile("^[0-9]{10}$")
 	return re.MatchString(phone_number)
 }
 

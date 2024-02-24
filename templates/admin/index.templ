@@ -1,82 +1,93 @@
 package admin_templates
 
 import "github.com/w1png/go-htmx-ecommerce-template/templates/scripts"
+import "github.com/w1png/go-htmx-ecommerce-template/models"
+import "fmt"
+import "github.com/w1png/go-htmx-ecommerce-template/templates/components"
 
-templ indexPage() {
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"
-  crossorigin="anonymous"></script>
-<script
-  src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datasource-prometheus@2/dist/chartjs-plugin-datasource-prometheus.umd.min.js"
-  crossorigin="anonymous"></script>
-<div class="container mx-auto mt-16">
-  <div class="flex flex-row">
-    <canvas class="w-1/2" id="myChart"></canvas>
-  </div>
-</div>
-@InitPrometheusChart()
+templ Order(order *models.Order) {
+	<button
+		class="admin-object-card-parent flex flex-row gap-2 cursor-pointer"
+		hx-get={ fmt.Sprintf("/admin/api/orders/%d/info", order.ID) }
+		hx-target="#order_info_modal_target"
+	>
+		<div class="">
+			{ order.DeliveryType.ToString() }
+		</div>
+		{ fmt.Sprintf("%d", order.GetTotalPrice()) }
+	</button>
 }
 
-script InitPrometheusChart() {
-Chart.registry.plugins.register(ChartDatasourcePrometheusPlugin);
-
-const endpoint = "http://localhost:6060";
-const baseURL = "/api/v1";
-
-
-var ctx = document.getElementById('myChart').getContext('2d');
-var myChart = new Chart(ctx, {
-type: 'line',
-plugins: [ChartDatasourcePrometheusPlugin],
-options: {
-scales: {
-x: {
-type: 'time',
-time: {
-unit: 'hour'
-},
-title: {
-display: true,
-text: 'Time'
-}
-},
-y: {
-beginAtZero: true,
-title: {
-display: true,
-text: 'Average Request Duration (seconds)'
-}
-}
-},
-plugins: {
-'datasource-prometheus': {
-prometheus: {
-endpoint: endpoint,
-baseURL: baseURL,
-},
-query: `(avg_over_time(echo_request_duration_seconds_sum[1h]) /
-avg_over_time(echo_request_duration_seconds_count[1h]))`,
-timeRange: {
-type: 'relative',
-start: -12 * 60 * 60 * 1000, // 12 hours ago
-end: 0, // until now
-},
-step: '1m', // Ensure data is fetched for each hour
-},
-},
-},
-});
-
+templ OrderInfoModal(order *models.Order) {
+	@components.Modal("order_info_modal_open") {
+		<div
+			hx-ext="response-targets"
+			x-init="order_info_modal_open = true"
+			class="w-[min(30rem,90vw)] bg-white rounded-2xl border-2 border-accent flex flex-col gap-4 p-6"
+		>
+			<h3 class="font-bold text-2xl">Информация о заказе</h3>
+			<hr/>
+			<p class="">Имя: { order.Name }</p>
+			<p class="">Телефон: +7{ order.PhoneNumber }</p>
+			<p class="">Email: { order.Email }</p>
+			<p class="">Способ доставки: { order.DeliveryType.ToString() }</p>
+			if order.DeliveryType == models.DeliveryTypeDelivery {
+				<p class="">Адрес доставки: { order.Adress }</p>
+				<p class="">Город доставки: { order.City }</p>
+			}
+			<select name="status" hx-get={ fmt.Sprintf("/admin/api/orders/%d", order.ID) } hx-swap="none">
+				for _, status := range models.ORDER_STATUSES_ARRAY {
+					<option value={ fmt.Sprintf("%d", status) } selected?={ status==order.Status }>{ status.ToString() }</option>
+				}
+			</select>
+			<p>Статус: { order.Status.ToString() }</p>
+			<div class="py-4 flex flex-col">
+				for _, product := range order.Products {
+					<a
+						class="flex flex-row p-4 gap-2 border-b-2 border-border hover:scale-105"
+						href={ templ.SafeURL(fmt.Sprintf("/products/%s", product.Slug)) }
+						hx-push-url={ fmt.Sprintf("/products/%s", product.Slug) }
+						hx-get={ fmt.Sprintf("/api/products/%s", product.Slug) }
+						hx-target="body"
+						hx-swap="outerHTML transition:true"
+						hx-boost="true"
+					>
+						<p>{ product.Name } x { fmt.Sprintf("%d", product.Quantity) }шт</p>
+						<p>{ fmt.Sprintf("%d", product.Price) }₽</p>
+						if product.DiscountPrice > 0 {
+							<p class="line-through">{ fmt.Sprintf("%d", product.DiscountPrice) }₽</p>
+						}
+					</a>
+				}
+				<p>Итого: { fmt.Sprintf("%d", order.GetTotalPrice()) }₽</p>
+			</div>
+		</div>
+	}
 }
 
-templ Index() {
-@Base("Админ панель") {
-@indexPage()
-}
+templ Orders(orders []*models.Order) {
+	for _, order := range orders {
+		@Order(order)
+	}
 }
 
-templ IndexApi() {
-@scripts.SetTitle("Админ панель")
-@Navbar()
-@indexPage()
+templ indexPage(orders []*models.Order) {
+	<span x-data="{ order_info_modal_open: false }">
+		<span id="order_info_modal_target"></span>
+		<div class="container mx-auto mt-24 flex flex-col">
+			@Orders(orders)
+		</div>
+	</span>
+}
+
+templ Index(orders []*models.Order) {
+	@Base("Админ панель") {
+		@indexPage(orders)
+	}
+}
+
+templ IndexApi(orders []*models.Order) {
+	@scripts.SetTitle("Админ панель")
+	@Navbar()
+	@indexPage(orders)
 }

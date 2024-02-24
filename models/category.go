@@ -28,9 +28,10 @@ func (c *Category) BeforeDelete(tx *gorm.DB) error {
 }
 
 func (c *Category) AfterFind(tx *gorm.DB) error {
-	if err := tx.Model(&Category{}).Where("parent_id = ?", c.ID).Find(&c.Children).Error; err != nil {
+	if err := tx.Model(&Category{}).Where("parent_id = ? and is_enabled = ?", c.ID, true).Find(&c.Children).Error; err != nil {
 		return err
 	}
+
 	return nil
 }
 

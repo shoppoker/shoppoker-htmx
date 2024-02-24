@@ -25,6 +25,12 @@ type Config struct {
 	PostgresPassword string `env:"POSTGRES_PASSWORD" default:"postgres"`
 	PostgresDatabase string `env:"POSTGRES_DATABASE" default:"postgres"`
 
+	SMTPFrom     string `env:"SMTP_FROM"`
+	SMTPHost     string `env:"SMTP_HOST"`
+	SMTPPort     int    `env:"SMTP_PORT"`
+	SMTPUser     string `env:"SMTP_USER"`
+	SMTPPassword string `env:"SMTP_PASSWORD"`
+
 	ObjectStorageBucketName string `env:"OBJECT_STORAGE_BUCKET_NAME"`
 }
 

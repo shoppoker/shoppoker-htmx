@@ -30,8 +30,5 @@ func IndexHandler(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
 	}
 
-	featured_products = append(featured_products, featured_products...)
-	featured_products = append(featured_products, featured_products...)
-
 	return utils.Render(c, user_templates.Index(featured_products))
 }

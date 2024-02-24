@@ -97,7 +97,7 @@ func CategoriesSearchHandler(c echo.Context) error {
 
 func AddCategoryModalHandler(c echo.Context) error {
 	var categories []*models.Category
-	if err := storage.GormStorageInstance.DB.Find(&categories).Error; err != nil {
+	if err := storage.GormStorageInstance.DB.Where("parent_id = ?", 0).Find(&categories).Error; err != nil {
 		log.Error(err)
 		return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
 	}
@@ -188,7 +188,7 @@ func EditCategoryModalHandler(c echo.Context) error {
 	}
 
 	var categories []*models.Category
-	if err := storage.GormStorageInstance.DB.Find(&categories).Error; err != nil {
+	if err := storage.GormStorageInstance.DB.Where("parent_id = ?", 0).Find(&categories).Error; err != nil {
 		log.Error(err)
 		return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
 	}
