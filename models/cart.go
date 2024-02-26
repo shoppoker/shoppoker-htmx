@@ -14,7 +14,7 @@ type Cart struct {
 }
 
 func (c *Cart) AfterFind(tx *gorm.DB) error {
-	if err := tx.Model(&CartProduct{}).Where("cart_id = ?", c.ID).Order("created_at ASC").Find(&c.Products).Error; err != nil {
+	if err := tx.Model(&CartProduct{}).Where("cart_id = ? and quantity > 0", c.ID).Order("created_at ASC").Find(&c.Products).Error; err != nil {
 		return err
 	}
 	return nil
@@ -22,6 +22,17 @@ func (c *Cart) AfterFind(tx *gorm.DB) error {
 
 func NewCart() *Cart {
 	return &Cart{}
+}
+
+func (c *Cart) GetProductAmount() int {
+	count := 0
+	for _, product := range c.Products {
+		if product.Quantity > 0 {
+			count += product.Quantity
+		}
+	}
+
+	return count
 }
 
 func (c *Cart) GetTotalPrice() int {

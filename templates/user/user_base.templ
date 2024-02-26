@@ -3,22 +3,22 @@ package user_templates
 import "github.com/w1png/go-htmx-ecommerce-template/templates"
 
 script intersectionObserver() {
-  var observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          setTimeout(function () {
-            entry.target.dataset.intersectionObserver.split(" ").forEach(function (className) {
-            entry.target.classList.remove(className);
-          })
-        }, entry.target.dataset.intersectionObserverDelay || 300);
-      }
-    });
-  });
+var observer = new IntersectionObserver(function (entries) {
+entries.forEach(function (entry) {
+if (entry.isIntersecting) {
+setTimeout(function () {
+entry.target.dataset.intersectionObserver.split(" ").forEach(function (className) {
+entry.target.classList.remove(className);
+})
+}, entry.target.dataset.intersectionObserverDelay || 300);
+}
+});
+});
 
-  var targets = document.querySelectorAll("[data-intersection-observer]");
-  targets.forEach(function (target) {
-    observer.observe(target);
-  });
+var targets = document.querySelectorAll("[data-intersection-observer]");
+targets.forEach(function (target) {
+observer.observe(target);
+});
 }
 
 templ Base(title string) {
@@ -27,7 +27,7 @@ templ Base(title string) {
 			<span class="text-in-stock text-out-of-stock text-order"></span>
 			@Navbar()
 			{ children... }
-      @Footer()
+			@Footer()
 		</div>
 	}
 }

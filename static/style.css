@@ -3,251 +3,255 @@
 @tailwind utilities;
 
 * {
-@apply transition-all ease-in-out duration-300;
+  @apply transition-all ease-in-out duration-300;
 }
 
 @font-face {
-font-family: "Involve";
-src: url("/static/Involve-Medium.otf") format("opentype");
-font-weight: 500;
+  font-family: "Involve";
+  src: url("/static/Involve-Medium.otf") format("opentype");
+  font-weight: 500;
 }
 
 @font-face {
-font-family: "Involve";
-src: url("/static/Involve-Bold.otf") format("opentype");
-font-weight: 700;
+  font-family: "Involve";
+  src: url("/static/Involve-Bold.otf") format("opentype");
+  font-weight: 700;
 }
 
 [x-cloak] {
-display: none !important;
+  display: none !important;
 }
 
 body {
-font-family: "Involve", sans-serif;
-@apply scroll-smooth text-text p-0;
+  font-family: "Involve", sans-serif;
+  @apply scroll-smooth text-text p-0;
+}
+
+img {
+  @apply select-none;
 }
 
 button,
 input {
-@apply select-none;
+  @apply select-none;
 }
 
 @layer base {
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
--webkit-appearance: none;
-margin: 0;
-}
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 
-input[type="file"] {
-@apply hidden;
-}
+  input[type="file"] {
+    @apply hidden;
+  }
 }
 
 .labeled-input-parent {
-@apply flex flex-col gap-1;
+  @apply flex flex-col gap-1;
 }
 
 .labeled-input-parent label {
-@apply text-nowrap select-none;
+  @apply text-nowrap select-none;
 }
 
 .labeled-input-parent input,
 .labeled-input-parent textarea {
-@apply input resize-none;
+  @apply input resize-none;
 }
 
 .labeled-input-parent select {
-@apply select;
+  @apply select;
 }
 
 .readonly-labeled-input-parent {
-@apply flex flex-col gap-1;
+  @apply flex flex-col gap-1;
 }
 
 .readonly-labeled-input-parent label {
-@apply text-nowrap select-none;
+  @apply text-nowrap select-none;
 }
 
 .readonly-labeled-input-parent input,
 .readonly-labeled-input-parent textarea {
-@apply input bg-border/30 backdrop-blur-md cursor-not-allowed text-hover select-none;
+  @apply input bg-border/30 backdrop-blur-md cursor-not-allowed text-hover select-none;
 }
 
 @layer components {
-.input {
-@apply rounded-2xl border-2 border-border py-4 px-6 w-full;
-}
+  .input {
+    @apply rounded-2xl border-2 border-border py-4 px-6 w-full;
+  }
 
-.select {
-@apply rounded-2xl border-2 border-border py-4 px-6 w-full relative;
-}
+  .select {
+    @apply rounded-2xl border-2 border-border py-4 px-6 w-full relative;
+  }
 }
 
 .error {
-@apply text-red-500 text-sm;
+  @apply text-red-500 text-sm;
 }
 
 .url {
-@apply underline text-nowrap hover:text-hover transition-all ease-in-out duration-300;
+  @apply underline text-nowrap hover:text-hover transition-all ease-in-out duration-300;
 }
 
 .submit {
-@apply py-4 px-6 border-2 border-accent bg-accent text-text rounded-xl hover:bg-white hover:text-accent
+  @apply py-4 px-6 border-2 border-accent bg-accent text-text rounded-xl hover:bg-white hover:text-accent
 cursor-pointer flex items-center justify-center;
 }
 
 .delete {
-@apply py-4 px-6 border-2 border-delete bg-delete text-white rounded-xl hover:bg-white hover:text-delete
+  @apply py-4 px-6 border-2 border-delete bg-delete text-white rounded-xl hover:bg-white hover:text-delete
 cursor-pointer flex items-center justify-center;
 }
 
 .submit-disabled {
-@apply py-2 px-6 border-2 border-submit-disabled bg-submit-disabled text-text text-2xl rounded-2xl cursor-not-allowed;
+  @apply py-2 px-6 border-2 border-submit-disabled bg-submit-disabled text-text text-2xl rounded-2xl cursor-not-allowed;
 }
 
 .delete-disabled {
-@apply py-2 px-6 border-2 border-delete-disabled bg-delete-disabled text-white text-2xl rounded-2xl animate-pulse
+  @apply py-2 px-6 border-2 border-delete-disabled bg-delete-disabled text-white text-2xl rounded-2xl animate-pulse
 cursor-not-allowed;
 }
 
 .htmx-indicator {
-display: none;
-opacity: 0;
-transition: opacity 500ms ease-in;
+  display: none;
+  opacity: 0;
+  transition: opacity 500ms ease-in;
 }
 .htmx-request .htmx-indicator {
-display: block;
-opacity: 1;
+  display: block;
+  opacity: 1;
 }
 .htmx-request.htmx-indicator {
-display: block;
-opacity: 1;
+  display: block;
+  opacity: 1;
 }
 
 @keyframes fade-in {
-from {
-opacity: 0;
-}
+  from {
+    opacity: 0;
+  }
 }
 
 @keyframes fade-out {
-to {
-opacity: 0;
-}
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes scale-in {
-from {
-transform: scale(0.8);
-}
+  from {
+    transform: scale(0.8);
+  }
 }
 
 @keyframes scale-out {
-to {
-transform: scale(0.8);
-}
+  to {
+    transform: scale(0.8);
+  }
 }
 
 @media (prefers-reduced-motion) {
-page-transition-animation {
-animation: none;
-}
+  page-transition-animation {
+    animation: none;
+  }
 }
 
 ::view-transition-old(page-transition-animation) {
-animation:
-180ms cubic-bezier(0.4, 0, 1, 1) both fade-out,
-600ms cubic-bezier(0.4, 0, 0.2, 1) both scale-out;
+  animation:
+    180ms cubic-bezier(0.4, 0, 1, 1) both fade-out,
+    600ms cubic-bezier(0.4, 0, 0.2, 1) both scale-out;
 }
 ::view-transition-new(page-transition-animation) {
-animation:
-420ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in,
-600ms cubic-bezier(0.4, 0, 0.2, 1) both scale-in;
+  animation:
+    420ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in,
+    600ms cubic-bezier(0.4, 0, 0.2, 1) both scale-in;
 }
 
 .page-transition {
-view-transition-name: page-transition-animation;
+  view-transition-name: page-transition-animation;
 }
 
 .admin-object-card-parent {
-@apply h-16 py-2 px-4 w-full flex flex-row items-center gap-4 rounded-2xl border-2 border-accent bg-white
+  @apply h-16 py-2 px-4 w-full flex flex-row items-center gap-4 rounded-2xl border-2 border-accent bg-white
 hover:scale-105;
 }
 
 .checkbox:before {
-content: "";
-@apply bg-white border border-border block w-4 h-4 rounded-full;
+  content: "";
+  @apply bg-white border border-border block w-4 h-4 rounded-full;
 }
 
 .checkbox {
-@apply flex flex-row gap-2 items-center cursor-pointer select-none;
+  @apply flex flex-row gap-2 items-center cursor-pointer select-none;
 }
 
 input[type="checkbox"]:checked + .checkbox:before {
-@apply bg-accent border-accent;
+  @apply bg-accent border-accent;
 }
 
 [data-tooltip] {
-@apply relative cursor-pointer;
+  @apply relative cursor-pointer;
 }
 
 [data-tooltip]:after {
-@apply absolute left-1/2 -translate-x-1/2 opacity-0 scale-50 transition-all ease-in-out duration-300 invisible;
+  @apply absolute left-1/2 -translate-x-1/2 opacity-0 scale-50 transition-all ease-in-out duration-300 invisible;
 }
 
 [data-tooltip]:after {
-content: attr(data-tooltip);
-@apply bg-black/50 whitespace-nowrap px-2 py-1 text-white text-sm bottom-[calc(100%+0.5rem)] rounded-full;
+  content: attr(data-tooltip);
+  @apply bg-black/50 whitespace-nowrap px-2 py-1 text-white text-sm bottom-[calc(100%+0.5rem)] rounded-full;
 }
 
 [data-tooltip]:hover:after {
-@apply scale-100 opacity-100 transition-all ease-in-out duration-300 visible;
+  @apply scale-100 opacity-100 transition-all ease-in-out duration-300 visible;
 }
 
 .slider {
-@apply h-1 w-full;
+  @apply h-1 w-full;
 }
 
 .slider::-webkit-slider-thumb {
-@apply appearance-none bottom-1 h-[1px] aspect-square relative bg-red-400;
-box-shadow: -100vw 0 0 0.25rem rgb(117 84 255);
+  @apply appearance-none bottom-1 h-[1px] aspect-square relative bg-red-400;
+  box-shadow: -100vw 0 0 0.25rem rgb(117 84 255);
 }
 
 .slider::-webkit-slider-runnable-track {
-@apply bg-accent/50 w-full h-1;
+  @apply bg-accent/50 w-full h-1;
 }
 
 @media not ((hover: hover) and (pointer: fine)) {
-.mobile-hidden {
-@apply hidden;
-}
+  .mobile-hidden {
+    @apply hidden;
+  }
 }
 
 .opacity-intersection {
-@apply opacity-0;
+  @apply opacity-0;
 }
 
 .markdown h1 {
-@apply text-2xl font-bold;
+  @apply text-2xl font-bold;
 }
 
 .markdown h2 {
-@apply text-xl font-bold;
+  @apply text-xl font-bold;
 }
 
 .markdown li {
-@apply list-inside list-disc;
+  @apply list-inside list-disc;
 }
 
 .markdown p {
-@apply my-2;
+  @apply my-2;
 }
 
 .markdown ul {
-@apply list-inside list-disc;
+  @apply list-inside list-disc;
 }
 
 .markdown ol {
-@apply list-inside list-decimal;
+  @apply list-inside list-decimal;
 }

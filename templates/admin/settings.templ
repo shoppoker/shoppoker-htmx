@@ -5,28 +5,33 @@ import "github.com/w1png/go-htmx-ecommerce-template/templates/components"
 import "github.com/w1png/go-htmx-ecommerce-template/settings"
 
 templ settingsPage() {
-<div class="container mx-auto mt-24 flex items-center justify-center" hx-ext="response-targets">
-  <form class="flex flex-col gap-2 p-4" hx-put="/admin/api/settings" hx-target="#success" hx-target-error="#error"
-    hx-swap="innerHTML">
-    @components.LabeledInput("Номер телефона", templ.Attributes{"type": "text", "name": "phone_number", "value":
-    settings.SettingsInstance.PhoneNumber}, "w-full")
-    @components.LabeledInput("Адрес", templ.Attributes{"type": "email", "name": "email", "value":
-    settings.SettingsInstance.Email}, "w-full")
-    <p id="error" class="error"></p>
-    <p id="success" class="text-green-400"></p>
-    <button class="submit">Сохранить</button>
-  </form>
-</div>
+	<div class="container mx-auto mt-24 flex items-center justify-center" hx-ext="response-targets">
+		<form
+			class="flex flex-col gap-2 p-4"
+			hx-put="/admin/api/settings"
+			hx-target="#success"
+			hx-target-error="#error"
+			hx-swap="innerHTML"
+		>
+			@components.LabeledInput("Номер телефона", templ.Attributes{"type": "text", "name": "phone_number", "value": settings.SettingsInstance.PhoneNumber}, "w-full")
+			@components.LabeledInput("Адрес", templ.Attributes{"type": "email", "name": "email", "value": settings.SettingsInstance.Email}, "w-full")
+			@components.LabeledInput("Ссылка на WhatsApp", templ.Attributes{"type": "text", "name": "whatsapp_url", "value": settings.SettingsInstance.WhatsappUrl}, "w-full")
+			@components.LabeledInput("Ссылка на Telegram", templ.Attributes{"type": "text", "name": "telegram_url", "value": settings.SettingsInstance.TelegramUrl}, "w-full")
+			<p id="error" class="error"></p>
+			<p id="success" class="text-green-400"></p>
+			<button class="submit">Сохранить</button>
+		</form>
+	</div>
 }
 
 templ Settings() {
-@Base("Настройки") {
-@settingsPage()
-}
+	@Base("Настройки") {
+		@settingsPage()
+	}
 }
 
 templ SettingsApi() {
-@scripts.SetTitle("Настройки")
-@Navbar()
-@settingsPage()
+	@scripts.SetTitle("Настройки")
+	@Navbar()
+	@settingsPage()
 }

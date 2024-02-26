@@ -88,12 +88,14 @@ templ productPage(product *models.Product, cart_product *models.CartProduct) {
 	>
 		<div class="flex flex-col gap-4">
 			<h1 class="text-5xl font-bold">{ product.Title }</h1>
+      <span class="hidden md:flex">
 			@components.Breadcrumb(constructBreadcrumbArray(product))
+      </span>
 		</div>
 		<div class="flex flex-col xl:flex-row gap-8 xl:gap-4">
-			<div class="flex flex-col-reverse xl:flex-row gap-2 xl:w-2/3 overflow-x-hidden">
+			<div class="flex flex-col-reverse xl:flex-row gap-2 xl:w-2/3 xl:overflow-x-hidden">
 				<div
-					class="flex flex-row xl:flex-col gap-2 w-28 bg-white h-full opacity-0 -translate-x-full z-20"
+					class="flex flex-row xl:flex-col gap-2 w-28 bg-white h-full opacity-0 -translate-x-full z-20 overflow-x-scroll xl:overflow-x-hidden w-full xl:w-fit"
 					data-intersection-observer="-translate-x-full opacity-0"
 					data-intersection-observer-delay="100"
 				>
@@ -138,7 +140,9 @@ templ productPage(product *models.Product, cart_product *models.CartProduct) {
           if product.StockType == models.StockTypeOutOfStock {
             <button class="submit-disabled" disabled>Добавить в корзину</button>
           } else {
-            @components.AddToCartButton(product.ID, cart_product.Quantity)
+            <span hx-get={ fmt.Sprintf("/api/cart/buttons/%d", product.ID) } hx-trigger="cart_updated from:body" hx-swap="innerHTML">
+              @components.AddToCartButton(product.ID, cart_product.Quantity)
+            </span>
           }
 				</div>
 				<p

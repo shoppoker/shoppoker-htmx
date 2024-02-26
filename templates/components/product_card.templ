@@ -5,31 +5,24 @@ import "fmt"
 import "github.com/w1png/go-htmx-ecommerce-template/file_storage"
 
 templ ProductCard(product *models.Product, class string) {
-	<a
-		class={ fmt.Sprintf("flex flex-col rounded-xl gap-2 group %s", class) }
-		hx-get={ fmt.Sprintf("/api/products/%s",
-  product.Slug) }
-		href={ templ.SafeURL(fmt.Sprintf("/products/%s", product.Slug)) }
-		hx-push-url={ fmt.Sprintf("/products/%s", product.Slug) }
-    x-id="['product-preview']"
-	>
-		<img
-			class="w-full aspect-video rounded-xl object-cover group-hover:scale-105 bg-secondary"
-			src={ file_storage.ObjectStorageId(product.Images[0]).GetUrl("image", "webp") }
-      x-init="!$el.complete && $el.classList.add('animate-pulse')"
-      @load="$el.classList.remove('animate-pulse')"
-		/>
-		<p class={ product.StockType.Color(), "w-full text-center" }>{ product.StockType.ToString() }</p>
-		<p class="w-full text-2xl font-bold">
-			{ product.Title }
-		</p>
-		<div class="w-full flex flex-row gap-2">
-			<p class={ "text-xl" , templ.KV("line-through", product.DiscountPrice !=-1) }>
-				{ fmt.Sprintf("%d", product.Price) }₽
-			</p>
-			if product.DiscountPrice != -1 {
-				<p class="text-xl">{ fmt.Sprintf("%d", product.DiscountPrice) }₽</p>
-			}
-		</div>
-	</a>
+<a class={ fmt.Sprintf("flex flex-col rounded-xl gap-2 group %s", class) } hx-get={ fmt.Sprintf("/api/products/%s",
+  product.Slug) } href={ templ.SafeURL(fmt.Sprintf("/products/%s", product.Slug)) } hx-push-url={
+  fmt.Sprintf("/products/%s", product.Slug) } x-id="['product-preview']">
+  <img class={ "w-full aspect-video rounded-xl object-cover group-hover:scale-105 bg-secondary" ,
+    templ.KV("opacity-80",product.StockType==models.StockTypeOutOfStock) } src={
+    file_storage.ObjectStorageId(product.Images[0]).GetUrl("image", "webp" ) }
+    x-init="!$el.complete && $el.classList.add('animate-pulse')" @load="$el.classList.remove('animate-pulse')" />
+  <p class={ product.StockType.Color(), "w-full text-sm lg:text-base text-center" }>{ product.StockType.ToString() }</p>
+  <p class="w-full text-xl lg:text-2xl font-bold">
+    { product.Title }
+  </p>
+  <div class="w-full flex flex-row gap-2">
+    <p class={ "lg:text-xl" , templ.KV("line-through", product.DiscountPrice !=-1) }>
+      { fmt.Sprintf("%d", product.Price) }₽
+    </p>
+    if product.DiscountPrice != -1 {
+    <p class="lg:text-xl">{ fmt.Sprintf("%d", product.DiscountPrice) }₽</p>
+    }
+  </div>
+</a>
 }

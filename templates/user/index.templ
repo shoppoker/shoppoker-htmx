@@ -9,7 +9,7 @@ templ heroSection() {
 		<div class="w-full xl:w-1/2 h-full flex items-center justify-center flex-col">
 			<div class="flex flex-col justify-center gap-4 px-8">
 				<h2
-					class="text-5xl -translate-x-full opacity-0"
+					class="text-5xl lg:text-6xl xl:text-7xl -translate-x-full opacity-0"
 					data-intersection-observer="opacity-0 -translate-x-full"
 					data-intersection-observer-delay="300"
 				>Фишки со своим<br/><strong>дизайном</strong></h2>
@@ -35,13 +35,13 @@ templ heroSection() {
 			</div>
 		</div>
 		<div class="hidden xl:grid w-1/2 h-full relative grid-cols-6 grid-rows-6">
-      <div class="col-start-2 row-start-1 row-span-2 col-span-2 z-0">
+      <div class="col-start-2 row-start-1 row-span-2 col-span-2 z-0 translate-x-full opacity-0" data-intersection-observer="translate-x-full opacity-0" data-intersection-observer-delay="300">
         <img class="h-full w-full object-cover rounded-xl" src="/static/hero1.png"/>
       </div>
-      <div class="col-start-3 row-start-2 col-span-3 row-span-4 z-10">
+      <div class="col-start-3 row-start-2 col-span-3 row-span-4 z-10 translate-x-full opacity-0" data-intersection-observer="translate-x-full opacity-0" data-intersection-observer-delay="400">
         <img class="h-full w-full object-cover rounded-xl" src="/static/hero2.png"/>
       </div>
-      <div class="col-start-2 row-start-5 row-span-2 col-span-2 z-20">
+      <div class="col-start-2 row-start-5 row-span-2 col-span-2 z-20 translate-x-full opacity-0" data-intersection-observer="translate-x-full opacity-0" data-intersection-observer-delay="500">
         <img class="h-full w-full object-cover rounded-xl" src="/static/hero3.png"/>
       </div>
 

@@ -2,7 +2,6 @@ package user_templates
 
 import "github.com/w1png/go-htmx-ecommerce-template/models"
 import "github.com/w1png/go-htmx-ecommerce-template/templates/scripts"
-import "fmt"
 import "github.com/w1png/go-htmx-ecommerce-template/templates/components"
 
 templ SearchList(products []*models.Product, search string, page int) {
@@ -15,25 +14,22 @@ templ SearchList(products []*models.Product, search string, page int) {
 			@components.ProductCard(product, "max-w-[300px]")
 		</span>
 	}
-	if len(products) == models.PRODUCTS_PER_PAGE {
-		<span
-			hx-get={ fmt.Sprintf("/api/search/page/%d", page) }
-			hx-target="#product-list"
-			hx-swap="beforeend"
-			hx-trigger="revealed"
-			class="hidden"
-		></span>
-	}
 	@intersectionObserver()
 }
 
 templ searchPage(products []*models.Product, search string) {
 	<div class="container mx-auto mt-24 px-4 flex flex-col gap-4">
 		<form class="flex flex-row gap-4" hx-post="/api/search" hx-target="#product-list" hx-swap="innerHTML">
-			<input class="input" placeholder="Покерный набор..." name="search"/>
+			<input class="input" placeholder="Покерный набор..." name="search" value={ search }/>
 			<button class="submit h-full aspect-square"><img class="w-full h-full" src="/static/search.svg"/></button>
 		</form>
-		<div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" id="product-list">
+		<div
+			class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+			id="product-list"
+			hx-boost="true"
+			hx-target="body"
+			hx-swap="innerHTML transition:true"
+		>
 			@SearchList(products, search, 2)
 		</div>
 	</div>

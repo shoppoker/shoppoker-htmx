@@ -10,7 +10,7 @@ templ Cart() {
 	<div
 		class="flex flex-row justify-end fixed w-screen h-screen left-0 right-0 top-0 bottom-0 bg-black/30 z-50"
 		hx-get="/api/cart"
-		hx-trigger="load, every 1s"
+		hx-trigger="cart_updated from:body"
 		hx-target="#cart-products"
 		hx-swap="innerHTML"
 		x-show="cart_open"
@@ -46,7 +46,19 @@ templ CartProduct(cart_product *models.CartProduct) {
 			@load="$el.classList.remove('animate-pulse')"
 		/>
 		<div class="flex flex-col grow justify-between">
-			<p>{ cart_product.Title }</p>
+			<a
+				href={ templ.SafeURL(fmt.Sprintf("/products/%s", cart_product.Slug)) }
+				hx-get={ fmt.Sprintf("/api/products/%s",
+      cart_product.Slug) }
+				hx-push-url={ fmt.Sprintf("/products/%s", cart_product.Slug) }
+				hx-boost="true"
+				hx-swap="innerHTML transition:true"
+				hx-target="body"
+				@click="document.body.classList.remove('overflow-hidden')"
+			>
+				{ 
+      cart_product.Title }
+			</a>
 			<div class="flex flex-row gap-4">
 				<p class={ "text-xl font-bold" , templ.KV("line-through text-base", cart_product.DiscountPrice> 0) }>
 					{ 
@@ -90,6 +102,7 @@ templ CartProducts(cart_products []*models.CartProduct) {
 				hx-push-url="/checkout"
 				hx-swap="outerHTML transition:true"
 				hx-target="body"
+				@click="document.body.classList.remove('overflow-hidden')"
 			>Оформить заказ</a>
 		}
 		<button class="hover:underline" hx-get="/api/cart/clear">Очистить корзину</button>

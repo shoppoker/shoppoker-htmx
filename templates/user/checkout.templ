@@ -7,9 +7,12 @@ import "github.com/w1png/go-htmx-ecommerce-template/templates/scripts"
 
 templ CheckoutComplete(order *models.Order) {
 	<div class="container mx-auto min-h-screen flex flex-col items-center justify-center gap-4">
-		<h1 class="text-5xl font-bold">Заказ №{ fmt.Sprintf("%d", order.ID) } оформлен</h1>
-		<h2 class="text-2xl">Благодарим вас за заказ! Чек с информацией о заказе отправлен вам на почту: { order.Email }</h2>
-		<a href="/" hx-get="/api/index" hx-push-url="/" hx-swap="outerHTML transition:true" hx-target="body">
+		<h1 class="text-3xl lg:text-4xl xl:text-5xl font-bold">Заказ №{ fmt.Sprintf("%d", order.ID) } оформлен</h1>
+		<h2 class="text-xl xl:text-2xl">
+			Благодарим вас за заказ! Чек с информацией о заказе отправлен вам на почту: { 
+    order.Email }
+		</h2>
+		<a class="submit" href="/" hx-get="/api/index" hx-push-url="/" hx-swap="outerHTML transition:true" hx-target="body">
 			Вернуться на
 			главную
 		</a>
@@ -33,21 +36,21 @@ templ DeliveryTypePickupForm() {
 
 templ DeliveryTypeDeliveryForm() {
 	<div class="flex flex-col gap-2" id="delivery_type_form">
-		@components.LabeledInput("Город", templ.Attributes{"placeholder": "Москва", "required": true, "autocomplete": "street-adress"}, "")
-		@components.LabeledInput("Адрес", templ.Attributes{"placeholder": "ул. 2-й Новоподмосковный переулок, д. 5",
+		@components.LabeledInput("Город", templ.Attributes{"placeholder": "Москва", "required": true, "autocomplete": "street-adress", "name": "city"}, "")
+		@components.LabeledInput("Адрес", templ.Attributes{"placeholder": "ул. 2-й Новоподмосковный переулок, д. 5", "name": "adress",
 			"required": true, "autocomplete": "street-adress"}, "")
 	</div>
 }
 
 templ checkoutPage() {
 	<div class="container mx-auto min-h-screen p-8 mt-24 flex justify-center items-center">
-		<div class="w-[30rem] h-full border-2 rounded-xl flex flex-col p-4" id="checkout">
+		<div class="w-[30rem] border-2 rounded-xl flex flex-col p-4" id="checkout" hx-ext="response-targets">
 			<div class="flex flex-col gap-4" id="checkout_products"></div>
 			<form
 				class="flex flex-col gap-2 p-4"
 				hx-post="/api/checkout"
 				hx-target="#checkout"
-				hx-target-error="#checkout_error"
+				hx-target-error="#checkout-error"
 				hx-indicator="#checkout_loading"
 				hx-swap="outerHTML"
 			>
@@ -63,7 +66,7 @@ templ checkoutPage() {
 							placeholder="9999999999"
 						/>
 						<span
-							class="opacity-100 peer-placeholder-shown:opacity-0 peer-focus:opacity-100 text-black peer-placeholder-shown:text-[#9CA3B0] h-full aspect-square flex items-center justify-center absolute top-0 left-0 translate-x-0 peer-placeholder-shown:-translate-x-full peer-focus:translate-x-0"
+							class="opacity-100 peer-placeholder-shown:opacity-0 peer-focus:opacity-100 text-black peer-placeholder-shown:text-[#9CA3B0] h-full aspect-square flex items-center justify-center absolute top-0 left-0 translate-x-0 peer-placeholder-shown:-translate-x-full peer-focus:translate-x-0 pointer-events-none"
 						>+7</span>
 					</div>
 				</div>
@@ -86,7 +89,7 @@ templ checkoutPage() {
 				</label>
 				@GetForm(models.DELIVERY_TYPES_ARRAY[0])
 				@components.Loading("checkout_loading")
-				<p id="checkout_error" class="text-sm text-red-400"></p>
+				<p id="checkout-error" class="text-sm text-red-400"></p>
 				<button class="submit">Оформить заказ</button>
 			</form>
 		</div>

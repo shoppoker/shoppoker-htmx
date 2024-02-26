@@ -1,6 +1,7 @@
 package user_handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"sync"
@@ -19,6 +20,8 @@ func GatherCartRoutes(user_page_group *echo.Echo, user_api_group, admin_page_gro
 	user_api_group.GET("/cart", GetCartHandler)
 	user_api_group.PUT("/cart/change_quantity/:product_id", ChangeCartProductQuantityHandler)
 	user_api_group.GET("/cart/clear", ClearCartHandler)
+	user_api_group.GET("/cart/buttons/:id", GetCartButtonsHandler)
+	user_api_group.GET("/cart/products/amount", GetCartProductsAmountHandler)
 }
 
 func ClearCartHandler(c echo.Context) error {
@@ -41,6 +44,8 @@ func ClearCartHandler(c echo.Context) error {
 		}(cart_product, &wg)
 	}
 	wg.Wait()
+
+	c.Response().Header().Set("HX-Trigger", "cart_updated")
 
 	return utils.Render(c, user_templates.CartProducts(cart_products))
 }
@@ -74,6 +79,25 @@ func GetCartHandler(c echo.Context) error {
 	wg.Wait()
 
 	return utils.Render(c, user_templates.CartProducts(cart_products))
+}
+
+func GetCartProductsAmountHandler(c echo.Context) error {
+	return c.String(http.StatusOK, fmt.Sprintf("%d", utils.GetCartFromContext(c.Request().Context()).GetProductAmount()))
+}
+
+func GetCartButtonsHandler(c echo.Context) error {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return c.NoContent(http.StatusOK)
+	}
+
+	var cart_product *models.CartProduct
+	if err := storage.GormStorageInstance.DB.Where("product_id = ? AND cart_id = ?", id, utils.GetCartFromContext(c.Request().Context()).ID).First(&cart_product).Error; err != nil {
+		log.Error(err)
+		return c.NoContent(http.StatusOK)
+	}
+
+	return utils.Render(c, components.AddToCartButton(uint(id), cart_product.Quantity))
 }
 
 func ChangeCartProductQuantityHandler(c echo.Context) error {
@@ -133,5 +157,6 @@ func ChangeCartProductQuantityHandler(c echo.Context) error {
 		return err
 	}
 
+	c.Response().Header().Set("HX-Trigger", "cart_updated")
 	return utils.Render(c, components.AddToCartButton(cart_product.ProductId, cart_product.Quantity))
 }

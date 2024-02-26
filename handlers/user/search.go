@@ -16,7 +16,6 @@ func GatherSearchRoutes(user_page_group *echo.Echo, user_api_group, admin_page_g
 	user_page_group.GET("/search", SearchHandler)
 	user_api_group.GET("/search", SearchApiHandler)
 	user_api_group.POST("/search", PostSearchHandler)
-	user_api_group.GET("/search/page/:page", SearchPageHandler)
 }
 
 func SearchHandler(c echo.Context) error {
@@ -26,7 +25,7 @@ func SearchHandler(c echo.Context) error {
 	}
 	var products []*models.Product
 	if err := storage.GormStorageInstance.DB.
-		Limit(models.PRODUCTS_PER_PAGE).
+		Order("created_at DESC").
 		Where("LOWER(title) LIKE LOWER(?) OR LOWER(tags) LIKE LOWER(?)", "%"+search+"%", "%"+search+"%").
 		Find(&products).Error; err != nil {
 		log.Error(err)
@@ -43,7 +42,7 @@ func SearchApiHandler(c echo.Context) error {
 	}
 	var products []*models.Product
 	if err := storage.GormStorageInstance.DB.
-		Limit(models.PRODUCTS_PER_PAGE).
+		Order("created_at DESC").
 		Where("LOWER(title) LIKE LOWER(?) OR LOWER(tags) LIKE LOWER(?)", "%"+search+"%", "%"+search+"%").
 		Find(&products).Error; err != nil {
 		log.Error(err)
@@ -64,11 +63,12 @@ func PostSearchHandler(c echo.Context) error {
 	}
 
 	var products []*models.Product
-	if err := storage.GormStorageInstance.DB.Limit(models.PRODUCTS_PER_PAGE).Where("LOWER(title) LIKE LOWER(?) OR LOWER(tags) LIKE LOWER(?)", "%"+search+"%", "%"+search+"%").Find(&products).Error; err != nil {
+	if err := storage.GormStorageInstance.DB.Order("created_at DESC").Where("LOWER(title) LIKE LOWER(?) OR LOWER(tags) LIKE LOWER(?)", "%"+search+"%", "%"+search+"%").Find(&products).Error; err != nil {
 		log.Error(err)
 		return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
 	}
 
+	c.Response().Header().Set("HX-Replace-URL", "/search?search="+search)
 	return utils.Render(c, user_templates.SearchList(products, search, 2))
 }
 

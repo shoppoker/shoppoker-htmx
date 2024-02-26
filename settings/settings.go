@@ -14,6 +14,8 @@ type Settings struct {
 
 	PhoneNumber string `default:"+7 (999) 999-99-99"`
 	Email       string `default:"admin@website.com"`
+	TelegramUrl string `default:"https://t.me/shoppokerru"`
+	WhatsappUrl string `default:"https://wa.me/79999999999"`
 }
 
 func InitSettings() error {

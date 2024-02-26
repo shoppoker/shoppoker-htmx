@@ -38,8 +38,20 @@ func PutSettingsHandler(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Электронная почта не может быть путой")
 	}
 
+	whatsapp_url := c.FormValue("whatsapp_url")
+	if whatsapp_url == "" {
+		return c.String(http.StatusBadRequest, "Ссылка на WhatsApp не может быть путой")
+	}
+
+	telegram_url := c.FormValue("telegram_url")
+	if telegram_url == "" {
+		return c.String(http.StatusBadRequest, "Ссылка на Telegram не может быть путой")
+	}
+
 	settings.SettingsInstance.PhoneNumber = phone_number
 	settings.SettingsInstance.Email = email
+	settings.SettingsInstance.WhatsappUrl = whatsapp_url
+	settings.SettingsInstance.TelegramUrl = telegram_url
 
 	if err := settings.SettingsInstance.Update(); err != nil {
 		return c.String(http.StatusInternalServerError, "Неизвестная ошибка")

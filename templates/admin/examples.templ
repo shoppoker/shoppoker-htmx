@@ -42,87 +42,108 @@ templ Example(example *models.Example) {
 }
 
 templ DeleteExampleModal(example *models.Example) {
-@components.Modal("delete_example_modal_open") {
-<span hx-ext="response-targets" x-init="delete_example_modal_open = true">
-  <div class="w-[min(30rem,90vw)] bg-white rounded-2xl border-2 border-accent flex flex-col gap-4 p-6">
-    <h3 class="font-bold text-2xl">Удаление примера</h3>
-    <hr />
-    <p class="text-subtext">Вы уверены, что хотите удалить пример { example.Title }?</p>
-    <div class="w-full flex flex-row gap-2">
-      <button hx-target={ fmt.Sprintf("#example_%d", example.ID) } hx-swap="outerHTML" class="delete" hx-delete={
-        fmt.Sprintf("/admin/api/examples/%d", example.ID) }
-        @click="delete_example_modal_open = false">Удалить</button>
-      <button class="submit" @click="delete_example_modal_open = false">Отмена</button>
-    </div>
-  </div>
-</span>
-}
+	@components.Modal("delete_example_modal_open") {
+		<span hx-ext="response-targets" x-init="delete_example_modal_open = true">
+			<div class="w-[min(30rem,90vw)] bg-white rounded-2xl border-2 border-accent flex flex-col gap-4 p-6">
+				<h3 class="font-bold text-2xl">Удаление примера</h3>
+				<hr/>
+				<p class="text-subtext">Вы уверены, что хотите удалить пример { example.Title }?</p>
+				<div class="w-full flex flex-row gap-2">
+					<button
+						hx-target={ fmt.Sprintf("#example_%d", example.ID) }
+						hx-swap="outerHTML"
+						class="delete"
+						hx-delete={ fmt.Sprintf("/admin/api/examples/%d", example.ID) }
+						@click="delete_example_modal_open = false"
+					>Удалить</button>
+					<button class="submit" @click="delete_example_modal_open = false">Отмена</button>
+				</div>
+			</div>
+		</span>
+	}
 }
 
 templ AddExampleModal(custom_chip_bases []*models.CustomChipBase) {
-@components.Modal("add_example_modal_open") {
-<span hx-ext="response-targets" x-init="add_example_modal_open = true" hx-ext="response-targets">
-  <form hx-post="/admin/api/examples" hx-target="#example-list" hx-swap="afterbegin" hx-target-error="#add-error" hx-encoding="multipart/form-data"
-    class="w-[min(30rem,90vw)] bg-white rounded-2xl border-2 border-accent flex flex-col gap-2 p-6">
-
-    <label class="submit">
-      <span id="image-upload-text">Загрузить изображения</span>
-      <input type="file" name="images" accept="image/*" multiple @change="document.getElementById('image-upload-text').innerText = `Загружено ${$el.files.length} изображений`" />
-    </label>
-
-    @components.LabeledInput("Название", templ.Attributes{"type": "text", "name": "title"}, "w-full")
-    @components.LabeledInput("Тэги (через запятую)", templ.Attributes{"type": "text", "name": "tags"}, "w-full")
-    <label class="labeled-input-parent">
-      Основа
-      <select name="custom_chip_base_id" id="add-custom-chip-base" class="select">
-        for _, custom_chip_base := range custom_chip_bases {
-        <option value={ fmt.Sprintf("%d", custom_chip_base.ID) }>{ custom_chip_base.Title }</option>
-        }
-      </select>
-    </label>
-
-    <p id="add-error" class="error"></p>
-    <button class="submit" x-on:htmx:after-swap.window="add_example_modal_open = false">Добавить</button>
-  </form>
-</span>
-}
+	@components.Modal("add_example_modal_open") {
+		<span hx-ext="response-targets" x-init="add_example_modal_open = true" hx-ext="response-targets">
+			<form
+				hx-post="/admin/api/examples"
+				hx-target="#example-list"
+				hx-swap="afterbegin"
+				hx-target-error="#add-error"
+				hx-encoding="multipart/form-data"
+				hx-indicator="#add-loading"
+				class="w-[min(30rem,90vw)] bg-white rounded-2xl border-2 border-accent flex flex-col gap-2 p-6"
+			>
+				<label class="submit">
+					<span id="image-upload-text">Загрузить изображения</span>
+					<input
+						type="file"
+						name="images"
+						accept="image/*"
+						multiple
+						@change="document.getElementById('image-upload-text').innerText = `Загружено ${$el.files.length} изображений`"
+					/>
+				</label>
+				@components.LabeledInput("Название", templ.Attributes{"type": "text", "name": "title"}, "w-full")
+				@components.LabeledInput("Тэги (через запятую)", templ.Attributes{"type": "text", "name": "tags"}, "w-full")
+				<label class="labeled-input-parent">
+					Основа
+					<select name="custom_chip_base_id" id="add-custom-chip-base" class="select">
+						for _, custom_chip_base := range custom_chip_bases {
+							<option value={ fmt.Sprintf("%d", custom_chip_base.ID) }>{ custom_chip_base.Title }</option>
+						}
+					</select>
+				</label>
+				<p id="add-error" class="error"></p>
+				<p id="add-loading" class="htmx-indicator">Загрузка...</p>
+				<button class="submit" x-on:htmx:after-swap.window="add_example_modal_open = false">Добавить</button>
+			</form>
+		</span>
+	}
 }
 
 func tags_to_string(tags []string) string {
-  if len(tags) == 0 {
-    return ""
-  }
-  return strings.Join(tags, ", ")
+	if len(tags) == 0 {
+		return ""
+	}
+	return strings.Join(tags, ", ")
 }
 
 templ EditExampleModal(example *models.Example, custom_chip_bases []*models.CustomChipBase) {
-@components.Modal("edit_example_modal_open") {
-<span hx-ext="response-targets" x-init="edit_example_modal_open = true" hx-ext="response-targets">
-  <form hx-put={ fmt.Sprintf("/admin/api/examples/%d", example.ID) } hx-target={ fmt.Sprintf("#example_%d", example.ID) } hx-swap="outerHTML" hx-target-error="#edit-error"
-    class="w-[min(30rem,90vw)] bg-white rounded-2xl border-2 border-accent flex flex-col gap-2 p-6">
-
-    <div class="flex flex-row gap-2 h-12 overflow-x-scroll">
-      for _, thumbnail := range example.Thumbnails {
-        <img src={ file_storage.ObjectStorageId(thumbnail).GetUrl("image", "webp") } class="h-12 aspect-square object-cover rounded-md" />
-      }
-    </div>
-
-    @components.LabeledInput("Название", templ.Attributes{"type": "text", "name": "title", "value": example.Title}, "w-full")
-    @components.LabeledInput("Тэги (через запятую)", templ.Attributes{"type": "text", "name": "tags", "value": tags_to_string(example.Tags)}, "w-full")
-    <label class="labeled-input-parent">
-      Основа
-      <select name="custom_chip_base_id" id="add-custom-chip-base" class="select">
-        for _, custom_chip_base := range custom_chip_bases {
-        <option value={ fmt.Sprintf("%d", custom_chip_base.ID) }>{ custom_chip_base.Title }</option>
-        }
-      </select>
-    </label>
-
-    <p id="edit-error" class="error"></p>
-    <button class="submit" x-on:htmx:after-swap.window="edit_example_modal_open = false">Добавить</button>
-  </form>
-</span>
-}
+	@components.Modal("edit_example_modal_open") {
+		<span hx-ext="response-targets" x-init="edit_example_modal_open = true" hx-ext="response-targets">
+			<form
+				hx-put={ fmt.Sprintf("/admin/api/examples/%d", example.ID) }
+				hx-target={ fmt.Sprintf("#example_%d", example.ID) }
+				hx-swap="outerHTML"
+				hx-target-error="#edit-error"
+				class="w-[min(30rem,90vw)] bg-white rounded-2xl border-2 border-accent flex flex-col gap-2 p-6"
+			>
+				<div class="flex flex-row gap-2 h-12 overflow-x-scroll">
+					for _, thumbnail := range example.Thumbnails {
+						<img
+							src={ file_storage.ObjectStorageId(thumbnail).GetUrl("image", "webp") }
+							class="h-12 aspect-square object-cover rounded-md"
+						/>
+					}
+				</div>
+				@components.LabeledInput("Название", templ.Attributes{"type": "text", "name": "title", "value": example.Title},
+					"w-full")
+				@components.LabeledInput("Тэги (через запятую)", templ.Attributes{"type": "text", "name": "tags", "value": tags_to_string(example.Tags)}, "w-full")
+				<label class="labeled-input-parent">
+					Основа
+					<select name="custom_chip_base_id" id="add-custom-chip-base" class="select">
+						for _, custom_chip_base := range custom_chip_bases {
+							<option value={ fmt.Sprintf("%d", custom_chip_base.ID) }>{ custom_chip_base.Title }</option>
+						}
+					</select>
+				</label>
+				<p id="edit-error" class="error"></p>
+				<button class="submit" x-on:htmx:after-swap.window="edit_example_modal_open = false">Добавить</button>
+			</form>
+		</span>
+	}
 }
 
 templ ExamplesList(examples []*models.Example, search string, next_page int) {
@@ -133,7 +154,7 @@ templ ExamplesList(examples []*models.Example, search string, next_page int) {
 		<span
 			class="hidden"
 			hx-get={ fmt.Sprintf("/admin/api/examples/page/%d?search=%s", next_page, search) }
-			hx-target="#examples-list"
+			hx-target="#example-list"
 			hx-swap="beforeend"
 			hx-trigger="revealed"
 			hx-indicator="#pagination-loading"
@@ -142,21 +163,34 @@ templ ExamplesList(examples []*models.Example, search string, next_page int) {
 }
 
 templ examplesPage(examples []*models.Example, search string) {
-<span x-data="{ add_example_modal_open: false }" id="add-example-target"></span>
-<span x-data="{ edit_example_modal_open: false }" id="edit-example-target"></span>
-<span x-data="{ delete_example_modal_open: false }" id="delete-example-target"></span>
-<div class="container mx-auto p-4 flex flex-col gap-6 mt-16">
-  <div class="flex flex-row gap-2">
-    <input type="text" class="input" name="search" placeholder="Поиск" hx-post="/admin/api/examples/search"
-      hx-target="#example-list" hx-swap="innerHTML" hx-trigger="input changed delay:500ms, search" value={ search } />
-    <button class="submit" hx-get="/admin/api/examples/add" hx-target="#add-example-target"
-      hx-swap="innerHTML">Добавить</button>
-  </div>
-  <div class="flex flex-col gap-2" id="example-list">
-    @ExamplesList(examples, search, 2)
-  </div>
-  <p class="htmx-indicator" id="pagination-loading">Загрузка...</p>
-</div>
+	<span x-data="{ add_example_modal_open: false }" id="add-example-target"></span>
+	<span x-data="{ edit_example_modal_open: false }" id="edit-example-target"></span>
+	<span x-data="{ delete_example_modal_open: false }" id="delete-example-target"></span>
+	<div class="container mx-auto p-4 flex flex-col gap-6 mt-16">
+		<div class="flex flex-row gap-2">
+			<input
+				type="text"
+				class="input"
+				name="search"
+				placeholder="Поиск"
+				hx-post="/admin/api/examples/search"
+				hx-target="#example-list"
+				hx-swap="innerHTML"
+				hx-trigger="input changed delay:500ms, search"
+				value={ search }
+			/>
+			<button
+				class="submit"
+				hx-get="/admin/api/examples/add"
+				hx-target="#add-example-target"
+				hx-swap="innerHTML"
+			>Добавить</button>
+		</div>
+		<div class="flex flex-col gap-2" id="example-list">
+			@ExamplesList(examples, search, 2)
+		</div>
+		<p class="htmx-indicator" id="pagination-loading">Загрузка...</p>
+	</div>
 }
 
 templ Examples(examples []*models.Example, search string) {
@@ -170,4 +204,3 @@ templ ExamplesApi(examples []*models.Example, search string) {
 	@Navbar()
 	@examplesPage(examples, search)
 }
-

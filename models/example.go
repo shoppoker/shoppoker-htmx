@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const EXAMPLES_PER_PAGE = 1
+const EXAMPLES_PER_PAGE = 10
 
 type Example struct {
 	gorm.Model
