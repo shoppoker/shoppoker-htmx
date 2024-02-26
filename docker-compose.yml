@@ -1,0 +1,37 @@
+version: "3"
+services:
+  database:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      POSTGRES_USER: w1png
+      POSTGRES_DB: shoppoker
+    restart: always
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+
+  website:
+     build:
+       context: .
+       dockerfile: Dockerfile
+     ports:
+       - 7777:8080
+     depends_on:
+       - database
+     environment:
+       - JWT_SECRET=$JWT_SECRET
+       - STORAGE_TYPE=postgres
+       - POSTGRES_HOST=database
+       - POSTGRES_PORT=5432
+       - POSTGRES_DATABASE=shoppoker
+       - POSTGRES_USER=w1png
+       - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+       - OBJECT_STORAGE_BUCKET_NAME=shoppoker
+       - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+       - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+       - SMTP_FROM=zakaz@shoppoker.ru
+       - SMTP_USER=zakaz@shoppoker.ru
+       - SMTP_HOST=smtp.yandex.ru
+       - SMTP_PORT=587
+       - SMTP_PASSWORD=$SMTP_PASSWORD
+     restart: always

@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/gommon/log"
 	"github.com/w1png/go-htmx-ecommerce-template/models"
 	"github.com/w1png/go-htmx-ecommerce-template/storage"
+	"gorm.io/gorm"
 )
 
 func UseCart(next echo.HandlerFunc) echo.HandlerFunc {
@@ -19,17 +20,22 @@ func UseCart(next echo.HandlerFunc) echo.HandlerFunc {
 
 		var uuid_ uuid.UUID
 		cart_uuid, err := c.Cookie("cart_uuid")
+		uuid_value := ""
 		if err != nil && err != http.ErrNoCookie {
 			log.Error(err)
 			return err
-		} else if err != nil {
-			uuid_, _ = uuid.Parse("")
-		} else {
-			uuid_, err = uuid.Parse(cart_uuid.Value)
+		} else if err == nil {
+			uuid_value = cart_uuid.Value
 		}
-		var cart *models.Cart
 
-		if err != nil {
+		uuid_, _ = uuid.Parse(uuid_value)
+		var cart *models.Cart
+		if err := storage.GormStorageInstance.DB.Where("uuid = ?", uuid_).First(&cart).Error; err != nil {
+			if err != gorm.ErrRecordNotFound {
+				log.Error(err)
+				return err
+			}
+
 			cart = models.NewCart()
 			if err := storage.GormStorageInstance.DB.Create(&cart).Error; err != nil {
 				log.Error(err)
@@ -41,11 +47,6 @@ func UseCart(next echo.HandlerFunc) echo.HandlerFunc {
 				Path:  "/",
 				Value: cart.UUID.String(),
 			})
-		} else {
-			if err := storage.GormStorageInstance.DB.Where("uuid = ?", uuid_).First(&cart).Error; err != nil {
-				log.Error(err)
-				return err
-			}
 		}
 
 		c.SetRequest(c.Request().WithContext(context.WithValue(c.Request().Context(), "cart", cart)))
