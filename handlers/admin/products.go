@@ -390,7 +390,7 @@ func DeleteProductHandler(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Неправильный запрос")
 	}
 
-	if err := storage.GormStorageInstance.DB.Delete(&models.Product{}, id).Error; err != nil {
+	if err := storage.GormStorageInstance.DB.Unscoped().Delete(&models.Product{}, id).Error; err != nil {
 		return err
 	}
 

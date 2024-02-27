@@ -134,7 +134,8 @@ templ EditProductModal(product *models.Product, categories []*models.Category) {
 				hx-put={ fmt.Sprintf("/admin/api/products/%d", product.ID) }
 				hx-target={ fmt.Sprintf("#product_%d", product.ID) }
 				hx-swap="outerHTML"
-				hx-target-error="#error"
+				hx-target-error="#edit-error"
+        hx-indicator="#edit-loading"
 				hx-encoding="multipart/form-data"
 				class="w-[min(60rem,90vw)] bg-white rounded-2xl border-2 border-accent flex flex-row gap-2 p-6"
 			>
@@ -194,7 +195,8 @@ templ EditProductModal(product *models.Product, categories []*models.Category) {
 					@components.LabeledTextarea("Описание", templ.Attributes{"name": "description"}, product.Description)
 					@components.Checkbox("Отображается", "edit-is_enabled", "is_enabled", "true", product.IsEnabled)
 					@components.Checkbox("На главной", "edit-is_featured", "is_featured", "true", product.IsFeatured)
-					<p id="error" class="error"></p>
+					<p id="edit-error" class="error"></p>
+          <p id="edit-loading" class="htmx-indicator">Загрузка...</p>
 					<button class="submit" x-on:htmx:after-swap.window="edit_product_modal_open = false">Добавить</button>
 				</div>
 			</form>

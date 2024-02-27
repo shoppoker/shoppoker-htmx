@@ -7,14 +7,14 @@ import "github.com/w1png/go-htmx-ecommerce-template/templates/components"
 
 templ Order(order *models.Order) {
 	<button
-		class="admin-object-card-parent flex flex-row gap-2 cursor-pointer"
+		class={ "admin-object-card-parent flex flex-row gap-2 cursor-pointer", templ.KV("line-through", order.Status == models.OrderStatusCompleted || order.Status == models.OrderStatusCancelled) }
 		hx-get={ fmt.Sprintf("/admin/api/orders/%d/info", order.ID) }
 		hx-target="#order_info_modal_target"
 	>
 		<div class="">
 			{ order.DeliveryType.ToString() }
 		</div>
-		{ fmt.Sprintf("%d", order.GetTotalPrice()) }
+		{ fmt.Sprintf("%d", order.GetTotalPrice()) }руб
 	</button>
 }
 

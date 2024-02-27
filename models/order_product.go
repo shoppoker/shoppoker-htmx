@@ -37,7 +37,7 @@ func NewOrderProduct(
 
 func (op *OrderProduct) GetTotalPrice() int {
 	p := op.Price
-	if op.DiscountPrice != -1 {
+	if op.DiscountPrice != 0 {
 		p = op.DiscountPrice
 	}
 	return p * op.Quantity

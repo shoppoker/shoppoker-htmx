@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const USERS_PER_PAGE = 2
+const USERS_PER_PAGE = 10
 
 type User struct {
 	gorm.Model

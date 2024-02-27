@@ -39,7 +39,7 @@ func (c *Cart) GetTotalPrice() int {
 	total := 0
 	for _, product := range c.Products {
 		p := product.Price
-		if product.DiscountPrice != -1 {
+		if product.DiscountPrice != 0 {
 			p = product.DiscountPrice
 		}
 		total += p * product.Quantity

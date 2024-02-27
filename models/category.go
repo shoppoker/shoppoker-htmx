@@ -21,7 +21,7 @@ type Category struct {
 	IsEnabled bool
 }
 
-const CATEGORIES_PER_PAGE = 1
+const CATEGORIES_PER_PAGE = 10
 
 func (c *Category) BeforeDelete(tx *gorm.DB) error {
 	return tx.Model(&Product{}).Where("category_id = ?", c.ID).Update("category_id", 0).Error

@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const ORDERS_PER_PAGE = 20
+const ORDERS_PER_PAGE = 30
 
 type DeliveryType int
 
@@ -178,7 +178,7 @@ func (o *Order) GetTotalPrice() int {
 	total := 0
 	for _, product := range o.Products {
 		p := product.Price
-		if product.DiscountPrice != -1 {
+		if product.DiscountPrice != 0 {
 			p = product.DiscountPrice
 		}
 		total += p * product.Quantity

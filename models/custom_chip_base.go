@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const CUSTOM_CHIP_BASES_PER_PAGE = 1
+const CUSTOM_CHIP_BASES_PER_PAGE = 10
 
 type CustomChipBase struct {
 	gorm.Model

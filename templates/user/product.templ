@@ -112,7 +112,7 @@ templ productPage(product *models.Product, cart_product *models.CartProduct) {
 				</div>
 				<img
 					src={ file_storage.ObjectStorageId(product.Images[0]).GetUrl("image", "webp") }
-					class="w-full xl:w-[calc(100%-7.5rem)] z-10 aspect-video rounded-xl object-cover scale-x-50 opacity-0"
+					class="w-full xl:w-[calc(100%-7.5rem)] z-10 aspect-video rounded-xl object-contain scale-x-50 opacity-0"
 					id="main-image"
 					@load="$el.classList.remove('opacity-0')"
 					data-intersection-observer="scale-x-50 opacity-0"
@@ -125,10 +125,10 @@ templ productPage(product *models.Product, cart_product *models.CartProduct) {
 					data-intersection-observer="opacity-0 scale-x-50"
 					data-intersection-observer-delay="300"
 				>
-					if product.DiscountPrice != -1 {
+					if product.DiscountPrice != 0 {
 						<p>{ fmt.Sprintf("%d", product.DiscountPrice) }₽</p>
 					}
-					<p class={ templ.KV("line-through text-xl", product.DiscountPrice != -1) }>
+					<p class={ templ.KV("line-through text-xl", product.DiscountPrice != 0) }>
 						{ fmt.Sprintf("%d", product.Price) }₽
 					</p>
 				</div>

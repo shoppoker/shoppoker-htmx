@@ -15,7 +15,7 @@ var STOCK_TYPES_ARRAY = []StockType{
 	StockTypeOrder,
 }
 
-const PRODUCTS_PER_PAGE = 2
+const PRODUCTS_PER_PAGE = 10
 
 const (
 	StockTypeInStock StockType = iota

@@ -6,8 +6,8 @@ import (
 	"github.com/h2non/bimg"
 )
 
-const MAX_SIZE_W = 1920
-const MAX_SIZE_H = 1080
+const MAX_SIZE_W = 2560
+const MAX_SIZE_H = 1440
 
 const THUMBNAIL_SIZE = 300
 

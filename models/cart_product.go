@@ -72,7 +72,7 @@ func (c *CartProduct) AfterFind(tx *gorm.DB) error {
 }
 
 func (c *CartProduct) TotalPrice() int {
-	if c.DiscountPrice != -1 {
+	if c.DiscountPrice != 0 {
 		return c.DiscountPrice * c.Quantity
 	}
 
