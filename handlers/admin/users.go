@@ -1,7 +1,6 @@
 package admin_handlers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -35,10 +34,6 @@ func UsersIndexHandler(c echo.Context) error {
 	var users []*models.User
 	if err := query.Find(&users).Error; err != nil {
 		return err
-	}
-
-	for _, user := range users {
-		fmt.Printf("User: %s\n\n\n", user.Username)
 	}
 
 	return utils.Render(c, admin_templates.Users(users, search))

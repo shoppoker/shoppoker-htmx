@@ -104,7 +104,7 @@ templ productPage(product *models.Product, cart_product *models.CartProduct) {
 							src={ file_storage.ObjectStorageId(thumbnail).GetUrl("image", "webp") }
 							id={ fmt.Sprintf("thumbnail-%d",
           i) }
-							class={ "w-full aspect-video rounded-md object-cover border-2 hover:border-accent" ,
+							class={ "w-28 aspect-video rounded-md object-cover border-2 hover:border-accent" ,
           templ.KV("border-accent", i==0), templ.KV("border-text", i !=0) }
 							@mouseover={ fmt.Sprintf("selectImage(selected_image_index, images, %d); selected_image_index=%d", i, i) }
 						/>

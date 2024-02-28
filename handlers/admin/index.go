@@ -67,8 +67,6 @@ func UpdateOrderStatusHandler(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Неверный запрос")
 	}
 
-	fmt.Printf("status: %v\n", status)
-
 	var order *models.Order
 	if err := storage.GormStorageInstance.DB.First(&order, id).Error; err != nil {
 		return err

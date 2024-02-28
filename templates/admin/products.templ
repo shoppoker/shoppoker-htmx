@@ -172,7 +172,6 @@ templ EditProductModal(product *models.Product, categories []*models.Category) {
 				<div class="flex flex-col gap-2 w-1/2">
 					<label>
 						Категория
-						{ fmt.Sprintf("selected category: %d", product.CategoryId) }
 						<select name="category" id="edit-category" class="select">
 							for _, category := range categories {
 								<option value={ fmt.Sprintf("%d", category.ID) } selected?={ category.ID==product.CategoryId }>

@@ -10,12 +10,11 @@ RUN tailwindcss -i ./static/style.css -o ./static/output.css --minify
 FROM golang:1.22-bullseye AS builder
 WORKDIR /app
 
-RUN go install github.com/a-h/templ/cmd/templ@latest
-
-RUN templ generate
-
 RUN apt-get update
 RUN apt-get install -y libvips-dev
+
+RUN go install github.com/a-h/templ/cmd/templ@latest
+RUN templ generate
 
 COPY . .
 
