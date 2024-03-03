@@ -35,16 +35,15 @@ templ heroSection() {
 			</div>
 		</div>
 		<div class="hidden xl:grid w-1/2 h-full relative grid-cols-6 grid-rows-6">
-      <div class="col-start-2 row-start-1 row-span-2 col-span-2 z-0 translate-x-full opacity-0" data-intersection-observer="translate-x-full opacity-0" data-intersection-observer-delay="300">
-        <img class="h-full w-full object-cover rounded-xl" src="/static/hero1.png"/>
-      </div>
-      <div class="col-start-3 row-start-2 col-span-3 row-span-4 z-10 translate-x-full opacity-0" data-intersection-observer="translate-x-full opacity-0" data-intersection-observer-delay="400">
-        <img class="h-full w-full object-cover rounded-xl" src="/static/hero2.png"/>
-      </div>
-      <div class="col-start-2 row-start-5 row-span-2 col-span-2 z-20 translate-x-full opacity-0" data-intersection-observer="translate-x-full opacity-0" data-intersection-observer-delay="500">
-        <img class="h-full w-full object-cover rounded-xl" src="/static/hero3.png"/>
-      </div>
-
+			<div class="col-start-2 row-start-1 row-span-2 col-span-2 z-0 translate-x-full opacity-0" data-intersection-observer="translate-x-full opacity-0" data-intersection-observer-delay="300">
+				<img class="h-full w-full object-cover rounded-xl" src="/static/hero1.png"/>
+			</div>
+			<div class="col-start-3 row-start-2 col-span-3 row-span-4 z-10 translate-x-full opacity-0" data-intersection-observer="translate-x-full opacity-0" data-intersection-observer-delay="400">
+				<img class="h-full w-full object-cover rounded-xl" src="/static/hero2.png"/>
+			</div>
+			<div class="col-start-2 row-start-5 row-span-2 col-span-2 z-20 translate-x-full opacity-0" data-intersection-observer="translate-x-full opacity-0" data-intersection-observer-delay="500">
+				<img class="h-full w-full object-cover rounded-xl" src="/static/hero3.png"/>
+			</div>
 		</div>
 	</div>
 }
@@ -76,7 +75,7 @@ templ advantagesSection() {
 }
 
 templ topSelling(featured_products []*models.Product) {
-	<div class="container mx-auto flex flex flex-col gap-8 p-4">
+	<div class="container mx-auto flex flex-col gap-8 p-4">
 		<h2 class="w-full text-5xl">Топ продаж</h2>
 		<div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
 			for _, product := range featured_products {

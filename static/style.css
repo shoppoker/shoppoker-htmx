@@ -232,6 +232,16 @@ input[type="checkbox"]:checked + .checkbox:before {
   @apply opacity-0;
 }
 
+.markdown {
+  font-family: "Involve", sans-serif;
+  @apply text-text;
+}
+
+.markdown pre code {
+    font-family: "Involve", sans-serif;
+  @apply whitespace-pre-wrap text-text;
+}
+
 .markdown h1 {
   @apply text-2xl font-bold;
 }

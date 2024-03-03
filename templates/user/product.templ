@@ -21,14 +21,14 @@ func constructBreadcrumbArray(product *models.Product) []components.BreadcrumbEl
 	}
 
 	if product.Category.ParentId != 0 {
-    var parent *models.Category
-    if err := storage.GormStorageInstance.DB.First(&parent, product.Category.ParentId).Error; err == nil {
-      elements = append(elements, components.BreadcrumbElement{
-        Title:      parent.Name,
-        Url:        fmt.Sprintf("/categories/%s", parent.Slug),
-        RequestUrl: fmt.Sprintf("/api/categories/%s", parent.Slug),
-      })
-    }
+		var parent *models.Category
+		if err := storage.GormStorageInstance.DB.First(&parent, product.Category.ParentId).Error; err == nil {
+			elements = append(elements, components.BreadcrumbElement{
+				Title:      parent.Name,
+				Url:        fmt.Sprintf("/categories/%s", parent.Slug),
+				RequestUrl: fmt.Sprintf("/api/categories/%s", parent.Slug),
+			})
+		}
 	}
 
 	elements = append(elements, components.BreadcrumbElement{
@@ -43,7 +43,7 @@ func constructBreadcrumbArray(product *models.Product) []components.BreadcrumbEl
 		},
 	)
 
-  return elements
+	return elements
 }
 
 func constructImagesDataTag(product *models.Product) string {
@@ -88,14 +88,14 @@ templ productPage(product *models.Product, cart_product *models.CartProduct) {
 	>
 		<div class="flex flex-col gap-4">
 			<h1 class="text-5xl font-bold">{ product.Title }</h1>
-      <span class="hidden md:flex">
-			@components.Breadcrumb(constructBreadcrumbArray(product))
-      </span>
+			<span class="hidden md:flex">
+				@components.Breadcrumb(constructBreadcrumbArray(product))
+			</span>
 		</div>
 		<div class="flex flex-col xl:flex-row gap-8 xl:gap-4">
 			<div class="flex flex-col-reverse xl:flex-row gap-2 xl:w-2/3 xl:overflow-x-hidden">
 				<div
-					class="flex flex-row xl:flex-col gap-2 w-28 bg-white h-full opacity-0 -translate-x-full z-20 overflow-x-scroll xl:overflow-x-hidden w-full xl:w-fit"
+					class="flex flex-row xl:flex-col gap-2 xl:w-28 bg-white h-full opacity-0 -translate-x-full z-20 overflow-x-scroll xl:overflow-x-hidden w-full"
 					data-intersection-observer="-translate-x-full opacity-0"
 					data-intersection-observer-delay="100"
 				>
@@ -137,13 +137,13 @@ templ productPage(product *models.Product, cart_product *models.CartProduct) {
 					data-intersection-observer="opacity-0 scale-x-50"
 					data-intersection-observer-delay="400"
 				>
-          if product.StockType == models.StockTypeOutOfStock {
-            <button class="submit-disabled" disabled>Добавить в корзину</button>
-          } else {
-            <span hx-get={ fmt.Sprintf("/api/cart/buttons/%d", product.ID) } hx-trigger="cart_updated from:body" hx-swap="innerHTML">
-              @components.AddToCartButton(product.ID, cart_product.Quantity)
-            </span>
-          }
+					if product.StockType == models.StockTypeOutOfStock {
+						<button class="submit-disabled" disabled>Добавить в корзину</button>
+					} else {
+						<span hx-get={ fmt.Sprintf("/api/cart/buttons/%d", product.ID) } hx-trigger="cart_updated from:body" hx-swap="innerHTML">
+							@components.AddToCartButton(product.ID, cart_product.Quantity)
+						</span>
+					}
 				</div>
 				<p
 					class={ product.StockType.Color(), "opacity-0 scale-x-50" }
