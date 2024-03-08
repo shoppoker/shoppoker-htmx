@@ -1,8 +1,13 @@
 package admin_handlers
 
 import (
+	"fmt"
+	"mime/multipart"
 	"net/http"
+	"sort"
 	"strconv"
+	"strings"
+	"sync"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
@@ -177,32 +182,86 @@ func PostProductHandler(c echo.Context) error {
 
 	files := form.File["images"]
 
-	var images, thumbnails []string
-	for _, file := range files {
-		image_file, err := file.Open()
-		if err != nil {
-			return c.String(http.StatusBadRequest, "Неправильный запрос")
-		}
-		image, thumbnail, err := utils.ProcessImage(image_file)
-		if err != nil {
-			log.Error(err)
-			return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
-		}
+	wg := sync.WaitGroup{}
+	type IndexedImage struct {
+		Image     file_storage.ObjectStorageId
+		Thumbnail file_storage.ObjectStorageId
+		Index     int
+	}
 
-		image_id, err := file_storage.FileStorageInstance.UploadFile(image)
-		if err != nil {
-			log.Error(err)
-			return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
-		}
+	images := make(chan IndexedImage, len(files))
+	errChan := make(chan error)
 
-		thumbnail_id, err := file_storage.FileStorageInstance.UploadFile(thumbnail)
-		if err != nil {
-			log.Error(err)
-			return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
-		}
+	wg.Add(len(files))
+	for i, file := range files {
+    file.Filename = fmt.Sprintf("%d_%s", i, file.Filename)
 
-		images = append(images, string(image_id))
-		thumbnails = append(thumbnails, string(thumbnail_id))
+		go func(file *multipart.FileHeader, wg *sync.WaitGroup, c echo.Context) {
+			defer wg.Done()
+
+			image_file, err := file.Open()
+			if err != nil {
+				errChan <- err
+				log.Error(err)
+				return
+			}
+			image, thumbnail, err := utils.ProcessImage(image_file)
+			if err != nil {
+				errChan <- err
+				log.Error(err)
+				return
+			}
+
+			image_id, err := file_storage.FileStorageInstance.UploadFile(image)
+			if err != nil {
+				errChan <- err
+				log.Error(err)
+				return
+			}
+
+			thumbnail_id, err := file_storage.FileStorageInstance.UploadFile(thumbnail)
+			if err != nil {
+				errChan <- err
+				log.Error(err)
+				return
+			}
+
+			s := strings.Split(file.Filename, "_")
+			image_index, err := strconv.Atoi(s[0])
+
+			images <- IndexedImage{
+				Image:     image_id,
+				Thumbnail: thumbnail_id,
+				Index:     image_index,
+			}
+
+			c.NoContent(http.StatusProcessing)
+		}(file, &wg, c)
+	}
+
+	wg.Wait()
+
+	close(errChan)
+	if err := <-errChan; err != nil {
+		log.Error(err)
+		return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
+	}
+
+	close(images)
+
+	sorted_indexed_images := make([]IndexedImage, 0, len(files))
+	for image := range images {
+		sorted_indexed_images = append(sorted_indexed_images, image)
+	}
+	sort.Slice(sorted_indexed_images, func(i, j int) bool {
+		return sorted_indexed_images[i].Index < sorted_indexed_images[j].Index
+	})
+
+	images_arr := make([]string, 0, len(files))
+	thumbnails_arr := make([]string, 0, len(files))
+	for _, image := range sorted_indexed_images {
+		images_arr = append(images_arr, string(image.Image))
+		thumbnails_arr = append(thumbnails_arr, string(image.Thumbnail))
 	}
 
 	product := models.NewProduct(
@@ -214,8 +273,8 @@ func PostProductHandler(c echo.Context) error {
 		stock_type,
 		tags,
 		uint(category_id),
-		images,
-		thumbnails,
+		images_arr,
+		thumbnails_arr,
 		is_enabled,
 		is_featured,
 	)
@@ -318,34 +377,92 @@ func PutProductHandler(c echo.Context) error {
 	}
 
 	files := form.File["images"]
-
-	var images, thumbnails []string
-	for _, file := range files {
-		image_file, err := file.Open()
-		if err != nil {
-			return c.String(http.StatusBadRequest, "Неправильный запрос")
-		}
-		image, thumbnail, err := utils.ProcessImage(image_file)
-		if err != nil {
-			log.Error(err)
-			return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
-		}
-
-		image_id, err := file_storage.FileStorageInstance.UploadFile(image)
-		if err != nil {
-			log.Error(err)
-			return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
-		}
-
-		thumbnail_id, err := file_storage.FileStorageInstance.UploadFile(thumbnail)
-		if err != nil {
-			log.Error(err)
-			return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
-		}
-
-		images = append(images, string(image_id))
-		thumbnails = append(thumbnails, string(thumbnail_id))
+	wg := sync.WaitGroup{}
+	type IndexedImage struct {
+		Image     file_storage.ObjectStorageId
+		Thumbnail file_storage.ObjectStorageId
+		Index     int
 	}
+
+	images := make(chan IndexedImage, len(files))
+	errChan := make(chan error)
+
+	wg.Add(len(files))
+	for i, file := range files {
+    file.Filename = fmt.Sprintf("%d_%s", i, file.Filename)
+
+		go func(file *multipart.FileHeader, wg *sync.WaitGroup, c echo.Context) {
+			defer wg.Done()
+
+			image_file, err := file.Open()
+			if err != nil {
+				errChan <- err
+				log.Error(err)
+				return
+			}
+			image, thumbnail, err := utils.ProcessImage(image_file)
+			if err != nil {
+				errChan <- err
+				log.Error(err)
+				return
+			}
+
+			image_id, err := file_storage.FileStorageInstance.UploadFile(image)
+			if err != nil {
+				errChan <- err
+				log.Error(err)
+				return
+			}
+
+			thumbnail_id, err := file_storage.FileStorageInstance.UploadFile(thumbnail)
+			if err != nil {
+				errChan <- err
+				log.Error(err)
+				return
+			}
+
+			s := strings.Split(file.Filename, "_")
+			image_index, err := strconv.Atoi(s[0])
+
+			images <- IndexedImage{
+				Image:     image_id,
+				Thumbnail: thumbnail_id,
+				Index:     image_index,
+			}
+
+			c.NoContent(http.StatusProcessing)
+		}(file, &wg, c)
+	}
+
+	wg.Wait()
+
+	close(errChan)
+	if err := <-errChan; err != nil {
+		log.Error(err)
+		return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
+	}
+
+	close(images)
+
+	sorted_indexed_images := make([]IndexedImage, 0, len(files))
+	for image := range images {
+		sorted_indexed_images = append(sorted_indexed_images, image)
+	}
+	sort.Slice(sorted_indexed_images, func(i, j int) bool {
+		return sorted_indexed_images[i].Index < sorted_indexed_images[j].Index
+	})
+
+	images_arr := make([]string, 0, len(files))
+	thumbnails_arr := make([]string, 0, len(files))
+	for _, image := range sorted_indexed_images {
+		images_arr = append(images_arr, string(image.Image))
+		thumbnails_arr = append(thumbnails_arr, string(image.Thumbnail))
+	}
+
+  for _, file := range files {
+    fmt.Println(file.Filename)
+  }
+
 
 	product.Title = title
 	product.Description = description
@@ -355,10 +472,8 @@ func PutProductHandler(c echo.Context) error {
 	product.DiscountPrice = discount_price
 	product.StockType = stock_type
 	product.CategoryId = uint(category_id)
-	if len(thumbnails) != 0 {
-		product.Images = images
-		product.Thumbnails = thumbnails
-	}
+  product.Images = images_arr
+  product.Thumbnails = thumbnails_arr
 	product.IsEnabled = is_enabled
 	product.IsFeatured = is_featured
 

@@ -49,57 +49,86 @@ templ AddProductModal(categories []*models.Category) {
 	@components.Modal("add_product_modal_open") {
 		<span hx-ext="response-targets" x-init="add_product_modal_open = true">
 			<form
+				x-data="{ title: '' }"
 				hx-post="/admin/api/products"
 				hx-target="#product-list"
 				hx-swap="afterbegin"
 				hx-target-error="#error"
 				hx-encoding="multipart/form-data"
 				hx-indicator="#add-loading"
-				class="w-[min(60rem,90vw)] bg-white rounded-2xl border-2 border-accent flex flex-row gap-2 p-6"
+				class="w-[min(36rem,90vw)] max-h-[90vh] bg-white rounded-2xl border-2 border-accent flex flex-col overflow-y-scroll gap-2 p-6"
 			>
-				<div class="flex flex-col gap-2 w-1/2" x-data="{ title: '' }">
+				<div
+					class="flex flex-col gap-4"
+					x-init="$watch('images', images => {updateFiles(images))})"
+					x-data="{ images: [],
+              updateFiles: (images) => {
+                let input = document.getElementById('add-images-input');
+                let dt = new DataTransfer();
+                for (let i = 0; i < images.length; i++) {
+                  dt.items.add(images[i]);
+                }
+                input.files = dt.files;
+              }
+              }"
+				>
+					<div class="grid grid-cols-2 gap-2">
+						<template x-for="(image, index) in images" :key="index">
+							<div
+								class="relative aspect-video group"
+								x-sortable:images="index"
+							>
+								<div
+									class="absolute top-2 right-2 w-4 h-4 group-hover:opacity-100 opacity-0 "
+									@click="images = images.filter(i => i !== image); updateFiles(images)"
+								>
+									@icons.Delete("w-4 h-4 hover:scale-105 cursor-pointer")
+								</div>
+								<img class="h-full w-full object-contain" x-bind:src="window.URL.createObjectURL(image)"/>
+							</div>
+						</template>
+					</div>
 					<label class="submit">
-						<span id="image-upload-text-">Загрузить изображения</span>
+						Загрузить фотографии
 						<input
 							class="hidden"
 							type="file"
 							accept="image/*"
 							name="images"
-							@change="document.getElementById('image-upload-text-').innerText = `Загружено ${$el.files.length} изображений`"
+							id="add-images-input"
+							@change="images = [...images, ...$el.files]; updateFiles(images)"
 							multiple
 						/>
 					</label>
-					@components.LabeledInput("Название", templ.Attributes{"type": "text", "name": "title", "x-model": "title"},
-						"w-full")
-					@components.LabeledInput("Ссылка", templ.Attributes{"type": "text", "name": "slug", "x-init": "$watch('title',title => $el.value = rus_to_latin(title))"}, "w-full")
-					@components.LabeledInput("Цена", templ.Attributes{"type": "number", "name": "price", "value": "0"}, "w-full")
-					@components.LabeledInput("Цена со скидкой (0 - без скидки)", templ.Attributes{"type": "number", "name": "discount_price", "value": "0"}, "w-full")
-					@components.LabeledInput("Тэги", templ.Attributes{"type": "text", "name": "tags"}, "w-full")
 				</div>
-				<div class="flex flex-col gap-2 w-1/2">
-					<label>
-						Категория
-						<select name="category" id="add-category" class="select">
-							for _, category := range categories {
-								<option value={ fmt.Sprintf("%d", category.ID) }>{ category.Name }</option>
-							}
-						</select>
-					</label>
-					<label>
-						Наличие
-						<select name="stock_type" id="add-stock_type" class="select">
-							for _, stock_type := range models.STOCK_TYPES_ARRAY {
-								<option value={ fmt.Sprintf("%d", stock_type) }>{ stock_type.ToString() }</option>
-							}
-						</select>
-					</label>
-					@components.LabeledTextarea("Описание", templ.Attributes{"name": "description"}, "")
-					@components.Checkbox("Отображается", "add-is_enabled", "is_enabled", "true", true)
-					@components.Checkbox("На главной", "add-is_featured", "is_featured", "true", false)
-					<p id="error" class="error"></p>
-					<p id="add-loading" class="text-sm htmx-indicator">Загрузка...</p>
-					<button class="submit" x-on:htmx:after-swap.window="add_product_modal_open = false">Добавить</button>
-				</div>
+				@components.LabeledInput("Название", templ.Attributes{"type": "text", "name": "title", "x-model": "title"},
+					"w-full")
+				@components.LabeledInput("Ссылка", templ.Attributes{"type": "text", "name": "slug", "x-init": "$watch('title',title => $el.value = rus_to_latin(title))"}, "w-full")
+				@components.LabeledInput("Цена", templ.Attributes{"type": "number", "name": "price", "value": "0"}, "w-full")
+				@components.LabeledInput("Цена со скидкой (0 - без скидки)", templ.Attributes{"type": "number", "name": "discount_price", "value": "0"}, "w-full")
+				@components.LabeledInput("Тэги", templ.Attributes{"type": "text", "name": "tags"}, "w-full")
+				<label>
+					Категория
+					<select name="category" id="add-category" class="select">
+						for _, category := range categories {
+							<option value={ fmt.Sprintf("%d", category.ID) }>{ category.Name }</option>
+						}
+					</select>
+				</label>
+				<label>
+					Наличие
+					<select name="stock_type" id="add-stock_type" class="select">
+						for _, stock_type := range models.STOCK_TYPES_ARRAY {
+							<option value={ fmt.Sprintf("%d", stock_type) }>{ stock_type.ToString() }</option>
+						}
+					</select>
+				</label>
+				@components.LabeledTextarea("Описание", templ.Attributes{"name": "description"}, "")
+				@components.Checkbox("Отображается", "add-is_enabled", "is_enabled", "true", true)
+				@components.Checkbox("На главной", "add-is_featured", "is_featured", "true", false)
+				<p id="error" class="error"></p>
+				<p id="add-loading" class="text-sm htmx-indicator">Загрузка...</p>
+				<button class="submit" x-on:htmx:after-swap.window="add_product_modal_open = false">Добавить</button>
 			</form>
 		</span>
 	}
@@ -127,77 +156,131 @@ templ DeleteProductModal(product *models.Product) {
 	}
 }
 
+func constructImagesDataTag(product *models.Product) string {
+	res := "["
+	images_length := len(product.Images)
+	for i, image := range product.Images {
+		res += fmt.Sprintf("'%s'", file_storage.ObjectStorageId(image).GetUrl("image", "webp"))
+		if i != images_length-1 {
+			res += ","
+		}
+	}
+
+	res += "]"
+	return res
+}
+
 templ EditProductModal(product *models.Product, categories []*models.Category) {
 	@components.Modal("edit_product_modal_open") {
 		<span hx-ext="response-targets" x-init="edit_product_modal_open = true">
 			<form
+				x-data={ fmt.Sprintf("{ image_urls: %s }", constructImagesDataTag(product)) }
 				hx-put={ fmt.Sprintf("/admin/api/products/%d", product.ID) }
 				hx-target={ fmt.Sprintf("#product_%d", product.ID) }
 				hx-swap="outerHTML"
 				hx-target-error="#edit-error"
-        hx-indicator="#edit-loading"
+				hx-indicator="#edit-loading"
 				hx-encoding="multipart/form-data"
-				class="w-[min(60rem,90vw)] bg-white rounded-2xl border-2 border-accent flex flex-row gap-2 p-6"
+				class="w-[min(36rem,90vw)] max-h-[90vh] bg-white rounded-2xl border-2 border-accent flex flex-col overflow-y-scroll gap-2 p-6"
 			>
-				<div class="flex flex-col gap-2 w-1/2">
-					<div class="flex flex-row gap-1">
-						for _, thumbnail := range product.Thumbnails {
-							<img
-								class="h-12 aspect-square object-cover rounded-md"
-								src={ file_storage.ObjectStorageId(thumbnail).GetUrl("image", "webp") }
-							/>
-						}
-						<label class="submit">
-							<span id="edit-image-upload-text-">Загрузить изображения</span>
-							<input
-								class="hidden"
-								type="file"
-								accept="image/*"
-								name="images"
-								@change="document.getElementById('edit-image-upload-text-').innerText = `Загружено ${$el.files.length} изображений`"
-								multiple
-							/>
-						</label>
+				<div
+					class="flex flex-col gap-4"
+					x-init="$watch('images', images => {updateFiles(images)}); initImages(images)"
+					x-data="{ 
+              images: [],
+              initImages: (images) => {
+                let image_blobs = []
+                let promises = []
+                for (let i = 0; i < image_urls.length; i++) {
+                  promises.push(
+                    fetch(image_urls[i])
+                      .then(res => res.blob())
+                      .then(blob => {
+                        image_blobs.push({
+                          index: i,
+                          blob: blob
+                        })
+                        return blob
+                      })
+                  )
+                }
+
+                Promise.all(promises).then(() => {
+                  image_blobs.sort((a, b) => a.index - b.index)
+
+                  for (let i = 0; i < image_blobs.length; i++) {
+                    let file = new File([image_blobs[i].blob], `image_${i}.webp`, { type: 'image/webp' })
+                    images.push(file)
+                  }
+                })
+              },
+              updateFiles: (images) => {
+                let input = document.getElementById('add-images-input');
+                let dt = new DataTransfer();
+                for (let i = 0; i < images.length; i++) {
+                  dt.items.add(images[i]);
+                }
+                input.files = dt.files;
+              }
+            }"
+				>
+					<div class="grid grid-cols-2 gap-2">
+						<template x-for="(image, index) in images" :key="index">
+							<div
+								class="relative aspect-video group"
+								x-sortable:images="index"
+							>
+								<div
+									class="absolute top-2 right-2 w-4 h-4 group-hover:opacity-100 opacity-0 "
+									@click="images = images.filter(i => i !== image); updateFiles(images)"
+								>
+									@icons.Delete("w-4 h-4 hover:scale-105 cursor-pointer")
+								</div>
+								<img class="h-full w-full object-contain" x-bind:src="window.URL.createObjectURL(image)"/>
+							</div>
+						</template>
 					</div>
-					@components.LabeledInput("Название", templ.Attributes{"type": "text", "name": "title", "value": product.Title},
-						"w-full")
-					@components.LabeledInput("Ссылка", templ.Attributes{"type": "text", "name": "slug", "value": product.Slug},
-						"w-full")
-					@components.LabeledInput("Цена", templ.Attributes{"type": "number", "name": "price", "value": fmt.Sprintf("%d",
-						product.Price)}, "w-full")
-					@components.LabeledInput("Цена со скидкой (0 - без скидки)", templ.Attributes{"type": "number", "name": "discount_price", "value": fmt.Sprintf("%d", product.DiscountPrice)}, "w-full")
-					@components.LabeledInput("Тэги", templ.Attributes{"type": "text", "name": "tags", "value": product.Tags},
-						"w-full")
-				</div>
-				<div class="flex flex-col gap-2 w-1/2">
-					<label>
-						Категория
-						<select name="category" id="edit-category" class="select">
-							for _, category := range categories {
-								<option value={ fmt.Sprintf("%d", category.ID) } selected?={ category.ID==product.CategoryId }>
-									{ category.Name }
-								</option>
-							}
-						</select>
+					<label class="submit">
+						Загрузить фотографии
+						<input
+							class="hidden"
+							type="file"
+							accept="image/*"
+							name="images"
+							id="add-images-input"
+							@change="images = [...images, ...$el.files]; updateFiles(images); console.log(images)"
+							multiple
+						/>
 					</label>
-					<label>
-						Наличие
-						<select name="stock_type" id="edit-stock_type" class="select">
-							for _, stock_type := range models.STOCK_TYPES_ARRAY {
-								<option value={ fmt.Sprintf("%d", stock_type) } selected?={ stock_type==product.StockType }>
-									{ 
-            stock_type.ToString() }
-								</option>
-							}
-						</select>
-					</label>
-					@components.LabeledTextarea("Описание", templ.Attributes{"name": "description"}, product.Description)
-					@components.Checkbox("Отображается", "edit-is_enabled", "is_enabled", "true", product.IsEnabled)
-					@components.Checkbox("На главной", "edit-is_featured", "is_featured", "true", product.IsFeatured)
-					<p id="edit-error" class="error"></p>
-          <p id="edit-loading" class="htmx-indicator">Загрузка...</p>
-					<button class="submit" x-on:htmx:after-swap.window="edit_product_modal_open = false">Добавить</button>
 				</div>
+				@components.LabeledInput("Название", templ.Attributes{"type": "text", "name": "title", "value": product.Title},
+					"w-full")
+				@components.LabeledInput("Ссылка", templ.Attributes{"type": "text", "name": "slug", "value": product.Slug}, "w-full")
+				@components.LabeledInput("Цена", templ.Attributes{"value": fmt.Sprintf("%d", product.Price), "type": "number", "name": "price"}, "w-full")
+				@components.LabeledInput("Цена со скидкой (0 - без скидки)", templ.Attributes{"value": fmt.Sprintf("%d", product.DiscountPrice), "type": "number", "name": "discount_price"}, "w-full")
+				@components.LabeledInput("Тэги", templ.Attributes{"value": product.Tags, "type": "text", "name": "tags"}, "w-full")
+				<label>
+					Категория
+					<select name="category" id="add-category" class="select">
+						for _, category := range categories {
+							<option value={ fmt.Sprintf("%d", category.ID) } selected?={ category.ID == product.CategoryId }>{ category.Name }</option>
+						}
+					</select>
+				</label>
+				<label>
+					Наличие
+					<select name="stock_type" id="add-stock_type" class="select">
+						for _, stock_type := range models.STOCK_TYPES_ARRAY {
+							<option value={ fmt.Sprintf("%d", stock_type) } selected?={ stock_type == product.StockType }>{ stock_type.ToString() }</option>
+						}
+					</select>
+				</label>
+				@components.LabeledTextarea("Описание", templ.Attributes{"name": "description"}, product.Description)
+				@components.Checkbox("Отображается", "add-is_enabled", "is_enabled", "true", product.IsEnabled)
+				@components.Checkbox("На главной", "add-is_featured", "is_featured", "true", product.IsFeatured)
+				<p id="error" class="error"></p>
+				<p id="edit-loading" class="text-sm htmx-indicator">Загрузка...</p>
+				<button class="submit" x-on:htmx:after-swap.window="edit_product_modal_open = false">Сохранить</button>
 			</form>
 		</span>
 	}
