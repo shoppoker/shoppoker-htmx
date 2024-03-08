@@ -12,11 +12,27 @@ templ settingsPage() {
 			hx-target="#success"
 			hx-target-error="#error"
 			hx-swap="innerHTML"
+      hx-encoding="multipart/form-data"
 		>
 			@components.LabeledInput("Номер телефона", templ.Attributes{"type": "text", "name": "phone_number", "value": settings.SettingsInstance.PhoneNumber}, "w-full")
 			@components.LabeledInput("Адрес", templ.Attributes{"type": "email", "name": "email", "value": settings.SettingsInstance.Email}, "w-full")
 			@components.LabeledInput("Ссылка на WhatsApp", templ.Attributes{"type": "text", "name": "whatsapp_url", "value": settings.SettingsInstance.WhatsappUrl}, "w-full")
 			@components.LabeledInput("Ссылка на Telegram", templ.Attributes{"type": "text", "name": "telegram_url", "value": settings.SettingsInstance.TelegramUrl}, "w-full")
+			@components.LabeledInput("Текст для страницы с оптовой продажей", templ.Attributes{"type": "text", "name": "wholesale", "value": settings.SettingsInstance.WholeSale}, "w-full")
+			<label class="submit">
+				<p id="upload-label" class="text-sm">
+					Загрузить файл 
+					if settings.SettingsInstance.WholeSaleFile != "" {
+						{ "(файл есть)" }
+					}
+				</p>
+				<input
+					type="file"
+					accept="*"
+					name="wholesale_file"
+					onchange="document.getElementById('upload-label').innerText = this.files[0].name"
+				/>
+			</label>
 			<p id="error" class="error"></p>
 			<p id="success" class="text-green-400"></p>
 			<button class="submit">Сохранить</button>

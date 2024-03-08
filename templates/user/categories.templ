@@ -6,70 +6,83 @@ import "github.com/w1png/go-htmx-ecommerce-template/templates/scripts"
 import "fmt"
 
 func constructBreadcrumbCategoryArray(category_title string, parent *models.Category) []components.BreadcrumbElement {
-  elements := []components.BreadcrumbElement{
-    {
-      Title: "Главная",
-      Url: "/",
-      RequestUrl: "/api/index",
-    },
-  }
+	elements := []components.BreadcrumbElement{
+		{
+			Title:      "Главная",
+			Url:        "/",
+			RequestUrl: "/api/index",
+		},
+	}
 
-  if parent.ID != 0 {
-    elements = append(elements, components.BreadcrumbElement{Title: parent.Name, Url: fmt.Sprintf("/categories/%s", parent.Slug), RequestUrl: fmt.Sprintf("/api/categories/%s", parent.Slug)})
-  }
+	if parent.ID != 0 {
+		elements = append(elements, components.BreadcrumbElement{Title: parent.Name, Url: fmt.Sprintf("/categories/%s", parent.Slug), RequestUrl: fmt.Sprintf("/api/categories/%s", parent.Slug)})
+	}
 
-  elements = append(elements, components.BreadcrumbElement{Title: category_title, RequestUrl: fmt.Sprintf("/api/categories/%s", category_title), Url: fmt.Sprintf("/categories/%s", category_title)})
+	elements = append(elements, components.BreadcrumbElement{Title: category_title, RequestUrl: fmt.Sprintf("/api/categories/%s", category_title), Url: fmt.Sprintf("/categories/%s", category_title)})
 
-  return elements
+	return elements
 }
 
 templ ProductList(products []*models.Product, slug string, page int, sort string) {
-  for _, product := range products {
-    <span 
-      class="scale-x-50 opacity-0"
-      data-intersection-observer="opacity-0 scale-x-50"
-      data-intersection-observer-delay="300"
-    >
-      @intersectionObserver()
-      @components.ProductCard(product, "max-w-[300px]")
-    </span>
-  }
+	for _, product := range products {
+		<span
+			class="scale-x-50 opacity-0"
+			data-intersection-observer="opacity-0 scale-x-50"
+			data-intersection-observer-delay="300"
+		>
+			@intersectionObserver()
+			@components.ProductCard(product, "max-w-[300px]")
+		</span>
+	}
 }
 
 templ categoryPage(category *models.Category, sort string) {
-<div class={ "container mx-auto h-screen mt-24 flex flex-col gap-10 px-4" , templ.KV("items-center justify-center", len(category.Products)==0 && len(category.Children)==0) } hx-target="body"
-  hx-swap="outerHTML transition:true" hx-boost="true">
-  <div class="flex flex-col xl:flex-row w-full justify-between gap-4">
-    <div class="flex flex-col gap-4">
-      <h1 class="text-5xl font-bold">{ category.Name }</h1>
-      @components.Breadcrumb(constructBreadcrumbCategoryArray(category.Name, category.Parent))
-    </div>
-    <select
-      name="sort"
-      class="select w-full xl:w-fit h-fit"
-      hx-get={fmt.Sprintf("/api/categories/%s/products/page/1", category.Slug)}
-      hx-swap="innerHTML" hx-target="#product-list"
-    >
-      <option value="recommended" selected>Рекомендуем</option>
-      <option value="asc">Сначала дешевле</option>
-      <option value="desc">Сначала дороже</option>
-    </select>
-  </div>
-  <div class="w-full grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch" id="product-list">
-    @ProductList(category.Products, category.Slug, 2, sort)
-  </div>
-</div>
-@intersectionObserver()
+	<div
+		class={ "container mx-auto min-h-[calc(100svh-6rem)] mt-24 flex flex-col gap-10 px-4" , templ.KV("items-center justify-center", len(category.Products)==0 && len(category.Children)==0) }
+		hx-target="body"
+		hx-swap="outerHTML transition:true"
+		hx-boost="true"
+	>
+		<div class="flex flex-col xl:flex-row w-full justify-between gap-4">
+			<div class="flex flex-col gap-4">
+				<h1 class="text-5xl font-bold">{ category.Name }</h1>
+				@components.Breadcrumb(constructBreadcrumbCategoryArray(category.Name, category.Parent))
+			</div>
+			<select
+				name="sort"
+				class="select w-full xl:w-fit h-fit"
+				hx-get={ fmt.Sprintf("/api/categories/%s/products/page/1", category.Slug) }
+				hx-swap="innerHTML"
+				hx-target="#product-list"
+			>
+				<option value="recommended" selected>Рекомендуем</option>
+				<option value="asc">Сначала дешевле</option>
+				<option value="desc">Сначала дороже</option>
+			</select>
+		</div>
+		<div class="flex flex-col grow gap-6">
+			<div class="w-full grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch">
+				for _, child := range category.Children {
+					@components.CategoryCard(child, "")
+				}
+			</div>
+      <hr />
+			<div class="w-full grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch" id="product-list">
+				@ProductList(category.Products, category.Slug, 2, sort)
+			</div>
+		</div>
+	</div>
+	@intersectionObserver()
 }
 
 templ Category(category *models.Category, sort string) {
-@Base(category.Name) {
-@categoryPage(category, sort)
-}
+	@Base(category.Name) {
+		@categoryPage(category, sort)
+	}
 }
 
 templ CategoryApi(category *models.Category, sort string) {
-@scripts.SetTitle(category.Name)
-@Navbar()
-@categoryPage(category, sort)
+	@scripts.SetTitle(category.Name)
+	@Navbar()
+	@categoryPage(category, sort)
 }

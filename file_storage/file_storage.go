@@ -25,6 +25,10 @@ func (o ObjectStorageId) GetUrl(type_, extension string) string {
 	return fmt.Sprintf("/file/%s/%s/%s", type_, extension, o)
 }
 
+func (o ObjectStorageId) GetDownloadUrl(type_, extension string) string {
+	return fmt.Sprintf("/download/%s/%s/%s", type_, extension, o)
+}
+
 type FileStorage interface {
 	UploadFile(file_bytes []byte) (ObjectStorageId, error)
 

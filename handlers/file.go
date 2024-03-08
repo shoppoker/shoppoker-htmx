@@ -11,6 +11,7 @@ import (
 
 func GatherFilesHandler(user_page_group *echo.Echo, user_api_group, admin_page_group, admin_api_group *echo.Group) {
 	user_page_group.GET("/file/:file_type/:file_extension/:object_storage_id", S3FilesHandler)
+	user_page_group.GET("/download/:file_type/:file_extension/:object_storage_id", DownloadFileHandler)
 }
 
 func S3FilesHandler(c echo.Context) error {
@@ -25,5 +26,21 @@ func S3FilesHandler(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
+	return c.Blob(http.StatusOK, fmt.Sprintf("%s/%s", c.Param("file_type"), c.Param("file_extension")), file_bytes)
+}
+
+func DownloadFileHandler(c echo.Context) error {
+	object_storage_id := c.Param("object_storage_id")
+	if object_storage_id == "" {
+		return c.NoContent(http.StatusNotFound)
+	}
+
+	file_bytes, err := file_storage.FileStorageInstance.DownloadFile(file_storage.ObjectStorageId(object_storage_id))
+	if err != nil {
+		log.Error(err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	c.Response().Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=shoppoker.%s", c.Param("file_extension")))
 	return c.Blob(http.StatusOK, fmt.Sprintf("%s/%s", c.Param("file_type"), c.Param("file_extension")), file_bytes)
 }

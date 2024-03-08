@@ -13,6 +13,8 @@ import (
 func GatherIndexHandlers(user_page_group *echo.Echo, user_api_group, admin_page_group, admin_api_group *echo.Group) {
 	user_page_group.GET("/", IndexHandler)
 	user_api_group.GET("/index", IndexApiHandler)
+  user_page_group.GET("/wholesale", WholesaleHandler)
+  user_api_group.GET("/wholesale", WholesaleApiHandler)
 }
 
 func IndexApiHandler(c echo.Context) error {
@@ -31,4 +33,12 @@ func IndexHandler(c echo.Context) error {
 	}
 
 	return utils.Render(c, user_templates.Index(featured_products))
+}
+
+func WholesaleHandler(c echo.Context) error {
+  return utils.Render(c, user_templates.Wholesale())
+}
+
+func WholesaleApiHandler(c echo.Context) error {
+  return utils.Render(c, user_templates.WholesaleApi())
 }

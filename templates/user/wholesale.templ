@@ -1,0 +1,31 @@
+package user_templates
+
+import "github.com/w1png/go-htmx-ecommerce-template/templates/scripts"
+import "github.com/w1png/go-htmx-ecommerce-template/settings"
+
+templ wholeSalePage() {
+	<div class="container mx-auto mt-24 min-h-screen flex flex-col gap-4">
+		<pre>
+			{ settings.SettingsInstance.WholeSale }
+		</pre>
+		<a
+			class="submit"
+			href={ templ.SafeURL(settings.SettingsInstance.WholeSaleFile.GetDownloadUrl("application",
+    settings.SettingsInstance.WholeSaleFileExtension)) }
+		>
+			Скачать прайс лист
+		</a>
+	</div>
+}
+
+templ Wholesale() {
+	@Base("Опт") {
+		@wholeSalePage()
+	}
+}
+
+templ WholesaleApi() {
+	@scripts.SetTitle("Опт")
+	@Navbar()
+	@wholeSalePage()
+}

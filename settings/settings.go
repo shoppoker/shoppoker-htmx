@@ -3,6 +3,7 @@ package settings
 import (
 	"reflect"
 
+	"github.com/w1png/go-htmx-ecommerce-template/file_storage"
 	"github.com/w1png/go-htmx-ecommerce-template/storage"
 	"gorm.io/gorm"
 )
@@ -12,10 +13,13 @@ var SettingsInstance *Settings
 type Settings struct {
 	gorm.Model
 
-	PhoneNumber string `default:"+7 (999) 999-99-99"`
-	Email       string `default:"admin@website.com"`
-	TelegramUrl string `default:"https://t.me/shoppokerru"`
-	WhatsappUrl string `default:"https://wa.me/79999999999"`
+	PhoneNumber   string                       `default:"+7 (999) 999-99-99"`
+	Email         string                       `default:"admin@website.com"`
+	TelegramUrl   string                       `default:"https://t.me/shoppokerru"`
+	WhatsappUrl   string                       `default:"https://wa.me/79999999999"`
+	WholeSale     string                       `default:"Текст для оптовой продажи"`
+	WholeSaleFile file_storage.ObjectStorageId `default:"NULL"`
+  WholeSaleFileExtension string `default:"xls"`
 }
 
 func InitSettings() error {
