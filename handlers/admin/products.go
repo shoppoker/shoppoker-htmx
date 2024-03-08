@@ -175,6 +175,11 @@ func PostProductHandler(c echo.Context) error {
 	is_enabled, _ := strconv.ParseBool(c.FormValue("is_enabled"))
 	is_featured, _ := strconv.ParseBool(c.FormValue("is_featured"))
 
+  priority, err := strconv.Atoi(c.FormValue("priority"))
+  if err != nil {
+    return c.String(http.StatusBadRequest, "Неправильный запрос")
+  }
+
 	form, err := c.MultipartForm()
 	if err != nil {
 		return c.String(http.StatusBadRequest, "Неправильный запрос")
@@ -272,6 +277,7 @@ func PostProductHandler(c echo.Context) error {
 		discount_price,
 		stock_type,
 		tags,
+    priority,
 		uint(category_id),
 		images_arr,
 		thumbnails_arr,
@@ -371,6 +377,11 @@ func PutProductHandler(c echo.Context) error {
 	is_enabled, _ := strconv.ParseBool(c.FormValue("is_enabled"))
 	is_featured, _ := strconv.ParseBool(c.FormValue("is_featured"))
 
+  priority, err := strconv.Atoi(c.FormValue("priority"))
+  if err != nil {
+    return c.String(http.StatusBadRequest, "Неправильный запрос")
+  }
+
 	form, err := c.MultipartForm()
 	if err != nil {
 		return c.String(http.StatusBadRequest, "Неправильный запрос")
@@ -468,6 +479,7 @@ func PutProductHandler(c echo.Context) error {
 	product.Description = description
 	product.Slug = slug
 	product.Tags = tags
+  product.Priority = priority
 	product.Price = price
 	product.DiscountPrice = discount_price
 	product.StockType = stock_type

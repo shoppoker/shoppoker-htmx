@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
+	"github.com/w1png/go-htmx-ecommerce-template/file_storage"
 	"github.com/w1png/go-htmx-ecommerce-template/models"
 	"github.com/w1png/go-htmx-ecommerce-template/storage"
 	"github.com/w1png/go-htmx-ecommerce-template/utils"
@@ -106,7 +107,7 @@ func AddCategoryModalHandler(c echo.Context) error {
 }
 
 func PostCategoryHandler(c echo.Context) error {
-	if err := c.Request().ParseForm(); err != nil {
+	if err := c.Request().ParseMultipartForm(15 * 1024 * 1024); err != nil {
 		return c.String(http.StatusBadRequest, "Неверный запрос")
 	}
 
@@ -136,8 +137,38 @@ func PostCategoryHandler(c echo.Context) error {
 
 	is_enabled, _ := strconv.ParseBool(c.FormValue("is_enabled"))
 
+	image, err := c.FormFile("image")
+	if err != nil {
+		log.Error(err)
+		return c.String(http.StatusBadRequest, "Неверный запрос")
+	}
+
+	opened_image, err := image.Open()
+	if err != nil {
+		log.Error(err)
+		return c.String(http.StatusBadRequest, "Неверный запрос")
+	}
+	processed, thumbnail, err := utils.ProcessImage(opened_image)
+	if err != nil {
+		log.Error(err)
+		return c.String(http.StatusBadRequest, "Неверный запрос")
+	}
+
+	image_id, err := file_storage.FileStorageInstance.UploadFile(processed)
+	if err != nil {
+		log.Error(err)
+		return c.String(http.StatusBadRequest, "Неверный запрос")
+	}
+
+	thumbnail_id, err := file_storage.FileStorageInstance.UploadFile(thumbnail)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Неверный запрос")
+	}
+
 	category := models.NewCategory(name, slug, tags, uint(parent_id))
 	category.IsEnabled = is_enabled
+	category.Thumbnail = thumbnail_id
+	category.Image = image_id
 	if err := storage.GormStorageInstance.DB.Create(&category).Error; err != nil {
 		log.Error(err)
 		return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
@@ -202,7 +233,7 @@ func PutCategoryHandler(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Неверный запрос")
 	}
 
-	if err := c.Request().ParseForm(); err != nil {
+	if err := c.Request().ParseMultipartForm(15 * 1024 * 1024); err != nil {
 		return c.String(http.StatusBadRequest, "Неверный запрос")
 	}
 
@@ -237,6 +268,36 @@ func PutCategoryHandler(c echo.Context) error {
 	if err := storage.GormStorageInstance.DB.First(&category, id).Error; err != nil {
 		log.Error(err)
 		return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
+	}
+
+	image, err := c.FormFile("image")
+	if err == nil {
+		opened_image, err := image.Open()
+		if err != nil {
+			log.Error(err)
+			return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
+		}
+
+		processed, thumbnail, err := utils.ProcessImage(opened_image)
+		if err != nil {
+			log.Error(err)
+			return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
+		}
+
+		image_id, err := file_storage.FileStorageInstance.UploadFile(processed)
+		if err != nil {
+			log.Error(err)
+			return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
+		}
+
+		thumbnail_id, err := file_storage.FileStorageInstance.UploadFile(thumbnail)
+		if err != nil {
+			log.Error(err)
+			return c.String(http.StatusInternalServerError, "Неизвестная ошибка")
+		}
+
+		category.Image = image_id
+		category.Thumbnail = thumbnail_id
 	}
 
 	category.Name = name

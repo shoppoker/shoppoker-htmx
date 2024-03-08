@@ -61,6 +61,7 @@ type Product struct {
 	DiscountPrice int
 	StockType     StockType
 	Tags          string
+	Priority      int
 
 	CategoryId uint
 	Category   Category `gorm:"-"`
@@ -80,6 +81,7 @@ func NewProduct(
 	discount_price int,
 	stock_type StockType,
 	tags string,
+	priority int,
 	category_id uint,
 	images []string,
 	thumbnails []string,
@@ -96,6 +98,7 @@ func NewProduct(
 		DiscountPrice: discount_price,
 		StockType:     stock_type,
 		Tags:          tags,
+		Priority:      priority,
 		CategoryId:    category_id,
 		Images:        images,
 		Thumbnails:    thumbnails,

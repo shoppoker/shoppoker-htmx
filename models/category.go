@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/w1png/go-htmx-ecommerce-template/file_storage"
 	"gorm.io/gorm"
 )
 
@@ -11,6 +12,9 @@ type Category struct {
 	Name string
 	Slug string `gorm:"unique"`
 	Tags string
+
+	Image     file_storage.ObjectStorageId
+	Thumbnail file_storage.ObjectStorageId
 
 	ParentId uint
 	Parent   *Category `gorm:"-"`

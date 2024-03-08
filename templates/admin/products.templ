@@ -60,7 +60,7 @@ templ AddProductModal(categories []*models.Category) {
 			>
 				<div
 					class="flex flex-col gap-4"
-					x-init="$watch('images', images => {updateFiles(images))})"
+					x-init="$watch('images', images => {updateFiles(images)})"
 					x-data="{ images: [],
               updateFiles: (images) => {
                 let input = document.getElementById('add-images-input');
@@ -107,6 +107,8 @@ templ AddProductModal(categories []*models.Category) {
 				@components.LabeledInput("Цена", templ.Attributes{"type": "number", "name": "price", "value": "0"}, "w-full")
 				@components.LabeledInput("Цена со скидкой (0 - без скидки)", templ.Attributes{"type": "number", "name": "discount_price", "value": "0"}, "w-full")
 				@components.LabeledInput("Тэги", templ.Attributes{"type": "text", "name": "tags"}, "w-full")
+				@components.LabeledInput("Приоритет", templ.Attributes{"type": "number", "name": "priority", "value": "0"}, "w-full")
+				
 				<label>
 					Категория
 					<select name="category" id="add-category" class="select">
@@ -259,6 +261,7 @@ templ EditProductModal(product *models.Product, categories []*models.Category) {
 				@components.LabeledInput("Цена", templ.Attributes{"value": fmt.Sprintf("%d", product.Price), "type": "number", "name": "price"}, "w-full")
 				@components.LabeledInput("Цена со скидкой (0 - без скидки)", templ.Attributes{"value": fmt.Sprintf("%d", product.DiscountPrice), "type": "number", "name": "discount_price"}, "w-full")
 				@components.LabeledInput("Тэги", templ.Attributes{"value": product.Tags, "type": "text", "name": "tags"}, "w-full")
+				@components.LabeledInput("Приоритет", templ.Attributes{"value": fmt.Sprintf("%d", product.Priority), "type": "number", "name": "priority"}, "w-full")
 				<label>
 					Категория
 					<select name="category" id="add-category" class="select">
