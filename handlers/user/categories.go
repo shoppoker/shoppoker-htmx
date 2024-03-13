@@ -18,7 +18,7 @@ func GatherCategoriesRoutes(user_page_group *echo.Echo, user_api_group, admin_pa
 }
 
 func CategoryApiHandler(c echo.Context) error {
-	query := storage.GormStorageInstance.DB.Limit(models.PRODUCTS_PER_PAGE)
+	query := storage.GormStorageInstance.DB
 
 	sort := c.QueryParam("sort")
 	if sort != "" && sort != "recommended" {
@@ -30,7 +30,7 @@ func CategoryApiHandler(c echo.Context) error {
 		return err
 	}
 
-	if err := query.Order("priority DESC").Where("category_id = ?", category.ID).Limit(models.PRODUCTS_PER_PAGE).Find(&category.Products).Error; err != nil {
+	if err := query.Order("priority DESC").Where("category_id = ?", category.ID).Find(&category.Products).Error; err != nil {
 		return err
 	}
 
@@ -40,7 +40,7 @@ func CategoryApiHandler(c echo.Context) error {
 }
 
 func CategoryHandler(c echo.Context) error {
-	query := storage.GormStorageInstance.DB.Limit(models.PRODUCTS_PER_PAGE)
+	query := storage.GormStorageInstance.DB
 
 	sort := c.QueryParam("sort")
 	if sort != "" && sort != "recommended" {
@@ -54,7 +54,7 @@ func CategoryHandler(c echo.Context) error {
 
 	storage.GormStorageInstance.DB.First(&category.Parent, category.ParentId)
 
-	if err := query.Order("priority DESC").Where("category_id = ?", category.ID).Limit(models.PRODUCTS_PER_PAGE).Find(&category.Products).Error; err != nil {
+	if err := query.Order("priority DESC").Where("category_id = ?", category.ID).Find(&category.Products).Error; err != nil {
 		return err
 	}
 

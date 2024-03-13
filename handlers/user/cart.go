@@ -93,8 +93,7 @@ func GetCartButtonsHandler(c echo.Context) error {
 
 	var cart_product *models.CartProduct
 	if err := storage.GormStorageInstance.DB.Where("product_id = ? AND cart_id = ?", id, utils.GetCartFromContext(c.Request().Context()).ID).First(&cart_product).Error; err != nil {
-		log.Error(err)
-		return c.NoContent(http.StatusOK)
+		return utils.Render(c, components.AddToCartButton(uint(id), 0))
 	}
 
 	return utils.Render(c, components.AddToCartButton(uint(id), cart_product.Quantity))

@@ -3,34 +3,56 @@ package components
 import "github.com/w1png/go-htmx-ecommerce-template/models"
 import "fmt"
 import "github.com/w1png/go-htmx-ecommerce-template/file_storage"
+import "github.com/w1png/go-htmx-ecommerce-template/utils"
+
+func getCartProduct(ctx context.Context, product_id uint) models.CartProduct {
+	cart := utils.GetCartFromContext(ctx)
+	for _, p := range cart.Products {
+		if p.ProductId == product_id {
+			return *p
+		}
+	}
+
+	return models.CartProduct{}
+}
 
 templ ProductCard(product *models.Product, class string) {
-	<a
+	<div
 		class={ fmt.Sprintf("flex flex-col rounded-xl gap-2 group %s", class) }
-		hx-get={ fmt.Sprintf("/api/products/%s",
-  product.Slug) }
-		href={ templ.SafeURL(fmt.Sprintf("/products/%s", product.Slug)) }
-		hx-push-url={ fmt.Sprintf("/products/%s", product.Slug) }
-		x-id="['product-preview']"
 	>
-		<img
-			class={ "w-full aspect-video rounded-xl object-contain group-hover:scale-105 bg-secondary" ,
+		<a
+			hx-get={ fmt.Sprintf("/api/products/%s",
+  product.Slug) }
+			href={ templ.SafeURL(fmt.Sprintf("/products/%s", product.Slug)) }
+			hx-push-url={ fmt.Sprintf("/products/%s", product.Slug) }
+			x-id="['product-preview']"
+		>
+			<img
+				class={ "w-full aspect-video rounded-xl object-contain group-hover:scale-105 bg-secondary" ,
     templ.KV("opacity-80",product.StockType==models.StockTypeOutOfStock) }
-			src={ file_storage.ObjectStorageId(product.Images[0]).GetUrl("image", "webp") }
-			x-init="!$el.complete && $el.classList.add('animate-pulse')"
-			@load="$el.classList.remove('animate-pulse')"
-		/>
-		<p class={ product.StockType.Color(), "w-full text-sm lg:text-base text-center" }>{ product.StockType.ToString() }</p>
-		<p class="w-full text-xl lg:text-2xl font-bold">
-			{ product.Title }
-		</p>
-		<div class="w-full flex flex-row gap-2">
-			<p class={ "lg:text-xl" , templ.KV("line-through", product.DiscountPrice !=0) }>
-				{ fmt.Sprintf("%d", product.Price) }₽
+				src={ file_storage.ObjectStorageId(product.Images[0]).GetUrl("image", "webp") }
+				x-init="!$el.complete && $el.classList.add('animate-pulse')"
+				@load="$el.classList.remove('animate-pulse')"
+			/>
+			<p class={ product.StockType.Color(), "w-full text-sm lg:text-base text-center" }>{ product.StockType.ToString() }</p>
+			<p class="w-full text-xl lg:text-2xl font-bold">
+				{ product.Title }
 			</p>
-			if product.DiscountPrice != 0 {
-				<p class="lg:text-xl">{ fmt.Sprintf("%d", product.DiscountPrice) }₽</p>
-			}
-		</div>
-	</a>
+			<div class="w-full flex flex-row gap-2">
+				<p class={ "lg:text-xl" , templ.KV("line-through", product.DiscountPrice !=0) }>
+					{ fmt.Sprintf("%d", product.Price) }₽
+				</p>
+				if product.DiscountPrice != 0 {
+					<p class="lg:text-xl">{ fmt.Sprintf("%d", product.DiscountPrice) }₽</p>
+				}
+			</div>
+		</a>
+		if product.StockType == models.StockTypeOutOfStock {
+			<button class="submit-disabled" disabled>Добавить в корзину</button>
+		} else {
+			<span hx-get={ fmt.Sprintf("/api/cart/buttons/%d", product.ID) } hx-trigger="cart_updated from:body" hx-swap="innerHTML" hx-target="this">
+				@AddToCartButton(product.ID, getCartProduct(ctx, product.ID).Quantity)
+			</span>
+		}
+	</div>
 }

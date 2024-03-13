@@ -34,16 +34,6 @@ templ ProductList(products []*models.Product, slug string, page int, sort string
 		</span>
 		@intersectionObserver()
 	}
-  if len(products) == models.PRODUCTS_PER_PAGE {
-	<span
-    class="hidden"
-		hx-trigger="revealed"
-		hx-get={ fmt.Sprintf("/api/categories/%s/products/page/%d?sort=%s", slug, page, sort) }
-		hx-swap="beforeend"
-		hx-target="#product-list"
-	></span>
-    
-  }
 }
 
 templ categoryPage(category *models.Category, sort string) {
