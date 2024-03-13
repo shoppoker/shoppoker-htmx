@@ -30,10 +30,20 @@ templ ProductList(products []*models.Product, slug string, page int, sort string
 			data-intersection-observer="opacity-0 scale-x-50"
 			data-intersection-observer-delay="300"
 		>
-			@intersectionObserver()
 			@components.ProductCard(product, "max-w-[300px]")
 		</span>
+		@intersectionObserver()
 	}
+  if len(products) == models.PRODUCTS_PER_PAGE {
+	<span
+    class="hidden"
+		hx-trigger="revealed"
+		hx-get={ fmt.Sprintf("/api/categories/%s/products/page/%d?sort=%s", slug, page, sort) }
+		hx-swap="beforeend"
+		hx-target="#product-list"
+	></span>
+    
+  }
 }
 
 templ categoryPage(category *models.Category, sort string) {
@@ -66,7 +76,7 @@ templ categoryPage(category *models.Category, sort string) {
 					@components.CategoryCard(child, "")
 				}
 			</div>
-      <hr />
+			<hr/>
 			<div class="w-full grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-stretch" id="product-list">
 				@ProductList(category.Products, category.Slug, 2, sort)
 			</div>
