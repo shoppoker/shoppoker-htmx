@@ -14,10 +14,10 @@ RUN apt-get update
 RUN apt-get install -y libvips-dev
 
 RUN go install github.com/a-h/templ/cmd/templ@latest
-RUN templ generate
 
 COPY . .
 
+RUN templ generate
 RUN go mod download
 
 COPY --from=tailwind /app/static /app/static
