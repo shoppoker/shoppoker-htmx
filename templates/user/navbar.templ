@@ -170,7 +170,7 @@ templ Navbar() {
 				x-transition:leave-start="opacity-100 max-h-80"
 				x-transition:leave-end="opacity-0 max-h-0"
 			>
-				<div class="container mx-auto grid grid-cols-3 gap-4 p-4">
+				<div class="container mx-auto flex flex-row flex-wrap gap-4 p-4">
 					for _, main_category := range utils.GetCategoriesFromContext(ctx) {
 						<div class="flex flex-col" x-data="{ subcategories_open: false }">
 							<strong class="flex flex-row w-full gap-4 items-center">
