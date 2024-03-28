@@ -13,9 +13,9 @@ WORKDIR /app
 RUN apt-get update
 RUN apt-get install -y libvips-dev
 
-RUN go install github.com/a-h/templ/cmd/templ@latest
-
 COPY . .
+
+RUN go install github.com/a-h/templ/cmd/templ@latest
 
 RUN templ generate
 RUN go mod download
