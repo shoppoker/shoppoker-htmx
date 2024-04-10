@@ -108,5 +108,9 @@ func NewProduct(
 }
 
 func (product *Product) AfterFind(tx *gorm.DB) error {
-	return tx.Where("id = ?", product.CategoryId).First(&product.Category).Error
+	if err := tx.Where("id = ?", product.CategoryId).First(&product.Category).Error; err != nil && err != gorm.ErrRecordNotFound {
+		return err
+	}
+
+	return nil
 }

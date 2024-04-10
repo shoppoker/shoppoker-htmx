@@ -51,7 +51,7 @@ func ProductsHandler(c echo.Context) error {
 func ProductsApiHandler(c echo.Context) error {
 	search := c.QueryParam("search")
 
-	query := storage.GormStorageInstance.DB.Limit(models.PRODUCTS_PER_PAGE)
+	query := storage.GormStorageInstance.DB
 	if search != "" {
 		query = query.Where("LOWER(title) LIKE LOWER(?)", "%"+search+"%")
 	}
@@ -68,7 +68,7 @@ func ProductsApiHandler(c echo.Context) error {
 func ProductsPageHandler(c echo.Context) error {
 	search := c.QueryParam("search")
 
-	query := storage.GormStorageInstance.DB.Limit(models.PRODUCTS_PER_PAGE)
+	query := storage.GormStorageInstance.DB
 	if search != "" {
 		query = query.Where("LOWER(title) LIKE LOWER(?)", "%"+search+"%")
 	}
@@ -175,10 +175,10 @@ func PostProductHandler(c echo.Context) error {
 	is_enabled, _ := strconv.ParseBool(c.FormValue("is_enabled"))
 	is_featured, _ := strconv.ParseBool(c.FormValue("is_featured"))
 
-  priority, err := strconv.Atoi(c.FormValue("priority"))
-  if err != nil {
-    return c.String(http.StatusBadRequest, "Неправильный запрос")
-  }
+	priority, err := strconv.Atoi(c.FormValue("priority"))
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Неправильный запрос")
+	}
 
 	form, err := c.MultipartForm()
 	if err != nil {
@@ -199,7 +199,7 @@ func PostProductHandler(c echo.Context) error {
 
 	wg.Add(len(files))
 	for i, file := range files {
-    file.Filename = fmt.Sprintf("%d_%s", i, file.Filename)
+		file.Filename = fmt.Sprintf("%d_%s", i, file.Filename)
 
 		go func(file *multipart.FileHeader, wg *sync.WaitGroup, c echo.Context) {
 			defer wg.Done()
@@ -277,7 +277,7 @@ func PostProductHandler(c echo.Context) error {
 		discount_price,
 		stock_type,
 		tags,
-    priority,
+		priority,
 		uint(category_id),
 		images_arr,
 		thumbnails_arr,
@@ -377,10 +377,10 @@ func PutProductHandler(c echo.Context) error {
 	is_enabled, _ := strconv.ParseBool(c.FormValue("is_enabled"))
 	is_featured, _ := strconv.ParseBool(c.FormValue("is_featured"))
 
-  priority, err := strconv.Atoi(c.FormValue("priority"))
-  if err != nil {
-    return c.String(http.StatusBadRequest, "Неправильный запрос")
-  }
+	priority, err := strconv.Atoi(c.FormValue("priority"))
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Неправильный запрос")
+	}
 
 	form, err := c.MultipartForm()
 	if err != nil {
@@ -400,7 +400,7 @@ func PutProductHandler(c echo.Context) error {
 
 	wg.Add(len(files))
 	for i, file := range files {
-    file.Filename = fmt.Sprintf("%d_%s", i, file.Filename)
+		file.Filename = fmt.Sprintf("%d_%s", i, file.Filename)
 
 		go func(file *multipart.FileHeader, wg *sync.WaitGroup, c echo.Context) {
 			defer wg.Done()
@@ -470,22 +470,21 @@ func PutProductHandler(c echo.Context) error {
 		thumbnails_arr = append(thumbnails_arr, string(image.Thumbnail))
 	}
 
-  for _, file := range files {
-    fmt.Println(file.Filename)
-  }
-
+	for _, file := range files {
+		fmt.Println(file.Filename)
+	}
 
 	product.Title = title
 	product.Description = description
 	product.Slug = slug
 	product.Tags = tags
-  product.Priority = priority
+	product.Priority = priority
 	product.Price = price
 	product.DiscountPrice = discount_price
 	product.StockType = stock_type
 	product.CategoryId = uint(category_id)
-  product.Images = images_arr
-  product.Thumbnails = thumbnails_arr
+	product.Images = images_arr
+	product.Thumbnails = thumbnails_arr
 	product.IsEnabled = is_enabled
 	product.IsFeatured = is_featured
 
